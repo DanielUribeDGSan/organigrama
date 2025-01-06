@@ -1,0 +1,15 @@
+@import '../utils/index.scss';
+
+.section__login {
+  height: 100vh;
+  & .container-login {
+    padding: 4rem;
+    width: 100%;
+    @media #{$mw-xl} {
+      padding: 7rem;
+    }
+    @media #{$md,$sm,$xs} {
+      padding: 2rem;
+    }
+  }
+}

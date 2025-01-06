@@ -1,0 +1,95 @@
+@import '../utils/index.scss';
+
+.confirmation-area {
+  min-height: 100vh;
+  position: relative;
+
+  & .welcome {
+    margin-top: -100px;
+    & .logo {
+      margin-bottom: 1rem;
+      @media #{$sm,$xs} {
+        width: 70vw;
+      }
+    }
+    p {
+      font-size: 1.5rem;
+      color: var(--tp-common-black);
+      padding: 0;
+      margin: 0;
+      display: inline-flex;
+      margin-bottom: 1rem;
+      font-weight: 300;
+      @media #{$sm,$xs} {
+        font-size: 1.2rem;
+      }
+    }
+    & .primary {
+      color: var(--tp-theme-1);
+      font-weight: 500;
+    }
+    & .user {
+      color: var(--tp-common-dpink);
+      font-weight: 500;
+      font-size: 2.5rem;
+      @media #{$sm,$xs} {
+        font-size: 1.7rem;
+        text-align: center;
+      }
+    }
+  }
+
+  & .img-left-bottom {
+    position: absolute;
+    left: 10px;
+    bottom: 0;
+    width: 15vw;
+    z-index: -1;
+    @media #{$md} {
+      width: 25vw;
+    }
+    @media #{$sm,$xs} {
+      display: none;
+    }
+  }
+  & .img-bottom-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    width: 30vw;
+    z-index: -1;
+    @media #{$md} {
+      width: 45vw;
+    }
+    @media #{$sm,$xs} {
+      width: 80vw;
+    }
+  }
+  & .img-right-top {
+    position: absolute;
+    right: 10px;
+    top: 0;
+    width: 15vw;
+    z-index: -1;
+    @media #{$md} {
+      width: 25vw;
+    }
+    @media #{$sm,$xs} {
+      width: 25vw;
+    }
+  }
+  & .img-right-bottom {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 15vw;
+    z-index: -1;
+    @media #{$md} {
+      width: 25vw;
+    }
+    @media #{$sm,$xs} {
+      display: none;
+    }
+  }
+}

@@ -1,0 +1,49 @@
+@import "../../utils/index.scss";
+
+h2#swal2-title,
+div#swal2-html-container {
+  color: var(--tp-common-white);
+}
+.swal2-icon.swal2-warning.swal2-icon-show {
+  border-color: var(--tp-common-white);
+  color: var(--tp-common-white);
+}
+
+.swal2-popup.swal2-modal.swal2-icon-warning.swal2-show,
+.swal2-popup.swal2-modal.swal2-icon-error.swal2-show,
+.swal2-popup.swal2-modal.swal2-icon-info.swal2-show {
+  background-repeat: repeat-x;
+  background: url("/assets/images/utils/navigation.webp") repeat-x,
+    linear-gradient(to top, #98001b 5%, var(--tp-common-primary) 30%);
+  border-radius: 1rem;
+}
+button.swal2-confirm.swal2-styled {
+  background-color: var(--tp-common-white);
+  color: var(--text);
+  outline: none;
+}
+button.swal2-confirm.swal2-styled:active,
+button.swal2-confirm.swal2-styled:hover,
+button.swal2-confirm.swal2-styled::selection,
+button.swal2-confirm.swal2-styled:focus {
+  background-color: var(--tp-common-white);
+  color: var(--text);
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+.swal2-popup.swal2-toast.swal2-show {
+  animation: swal2-toast-show 0.5s;
+  background-repeat: repeat-x;
+  background: url("/assets/images/utils/navigation.webp") repeat-x,
+    linear-gradient(to top, #98001b 5%, var(--tp-common-primary) 30%);
+}
+.swal2-success-circular-line-left,
+.swal2-success-circular-line-right,
+.swal2-success-fix {
+  background-color: transparent !important;
+}
+div:where(.swal2-icon).swal2-info {
+  border-color: #fff !important;
+  color: #fff !important;
+}

@@ -1,0 +1,41 @@
+@import '../../utils/index.scss';
+
+.banner__login {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  & .logo {
+    margin-top: -250px;
+  }
+  & .img-left {
+    position: absolute;
+    bottom: 0;
+    width: 25vw;
+    @media #{$md,$sm,$xs} {
+      width: 45vw;
+    }
+  }
+  & .triangle {
+    width: 100%;
+    height: 42vh;
+    position: absolute;
+    bottom: 0;
+    background-color: var(--tp-theme-1);
+    clip-path: polygon(0 107%, 100% 0, 100% 100%);
+    @media #{$md,$sm,$xs} {
+      height: 20vh;
+    }
+    & img {
+      width: 40%;
+      position: absolute;
+      bottom: 20px;
+      right: 0;
+      @media #{$md,$sm,$xs} {
+        width: 35%;
+      }
+    }
+  }
+  & .backface-hidden {
+    backface-visibility: hidden;
+  }
+}

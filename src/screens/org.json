@@ -1,0 +1,78 @@
+{
+  "level": 0,
+  "tradingName": "PREVENCIÓN",
+  "type": 1,
+  "account": [],
+  "organizationChildRelationship": [
+    {
+      "level": 1,
+      "tradingName": "RESPUESTA DE AUTORIDAD SANITARIA",
+      "type": 2,
+      "account": [],
+      "organizationChildRelationship": [
+        {
+          "level": 2,
+          "tradingName": "Prevención (Q&A)",
+          "type": 2,
+          "organizationChildRelationship": [
+            {
+              "level": 3,
+              "tradingName": "Análisis de la prevención.",
+              "type": 3,
+              "account": [
+                {
+                  "level": 3,
+                  "name": "Analizar si aplica y los fundamentos de cada solicitud.",
+                  "type": 4
+                }
+              ],
+              "organizationChildRelationship": [
+                {
+                  "level": 3,
+                  "tradingName": "Mandar a traducción a idioma inglés con el proveedos de manera urgente",
+                  "type": 3,
+                  "account": [
+                    {
+                      "name": "Si es muy poca información, se puede considerar traducción por parte de RA-MEX",
+                      "type": 4
+                    }
+                  ],
+                  "organizationChildRelationship": [
+                    {
+                      "level": 4,
+                      "tradingName": "Relacionado a una ACTUALIZACIÓN DE SEGURIDAD",
+                      "type": 3,
+                      "account": [
+                        {
+                          "name": "Notificar a Global Submission Responsible, GRL y a los contactos con los que se trabajó la MCR.",
+                          "type": 3
+                        }
+                      ]
+                    },
+                    {
+                      "level": 4,
+                      "tradingName": "Relacionado a un PAC (Post Approval Change)",
+                      "type": 3,
+                      "account": [
+                        {
+                          "type": 3,
+                          "name": "Notificar a HQ - Lista que se declara en SOP How To Manage National Regulatory Submissions and Product Registrations"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "tradingName": "Aprobación",
+          "type": 2,
+          "account": []
+        }
+      ]
+    }
+  ]
+}

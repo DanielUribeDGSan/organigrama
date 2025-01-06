@@ -1,0 +1,237 @@
+@import "../../utils/index.scss";
+
+.modal-stand {
+  & .modal-content {
+    background-color: transparent;
+  }
+}
+
+.content-modal-info {
+  height: 100vh;
+  overflow: auto;
+}
+.content-modal-info .row {
+  height: 100%;
+}
+.content-modal-info .col-menu .nav {
+  flex-direction: column;
+  justify-content: center;
+  gap: 30px;
+  padding: 0.5rem;
+}
+.content-modal-info .col-header {
+  background-color: var(--tp-common-primary);
+  background-repeat: repeat-x;
+  background-image: url("/images/utils/navigation.webp");
+}
+.content-modal-info .col-header .nav li button {
+  background-color: transparent !important;
+  color: var(--tp-common-white);
+  border-bottom: 0px;
+  border-radius: 0rem;
+}
+.content-modal-info .col-header .nav li .active {
+  color: var(--tp-common-white);
+  border-bottom: 2px solid var(--tp-common-white);
+}
+.content-modal-info .col-header img {
+  width: 20%;
+}
+
+.content-modal-info .col-header .header-approve {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.content-modal-info .buttons {
+  margin-right: 1rem;
+  display: flex;
+  gap: 20px;
+}
+
+.content-modal-info .buttons .approve {
+  background-color: #fff;
+  color: var(--tp-common-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 0.2rem;
+  box-shadow: var(--tp-common-box-shadow);
+}
+.content-modal-info .buttons .deny {
+  background-color: var(--tp-common-secondary);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.2rem;
+  box-shadow: var(--tp-common-box-shadow);
+}
+
+.content-modal-info .col-menu {
+  width: 20vw;
+  background-color: var(--tp-common-primary);
+  background-repeat: repeat-x;
+  background-image: url("/assets/images/utils/navigation.webp");
+}
+.content-modal-info .modal-header .btn-close {
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  right: 2%;
+  top: 2%;
+  background: none;
+  font-size: 2.5rem;
+  opacity: 1;
+  color: var(--tp-common-white);
+}
+.content-modal-info .col-content {
+  width: 100%;
+  padding: 0;
+}
+.content-modal-info .col-content .modal-header {
+  height: auto;
+}
+.content-modal-info .col-menu .nav li button {
+  color: #fff;
+  background-color: transparent;
+  border: none;
+}
+.content-modal-info .col-menu .nav li .active {
+  color: var(--tp-common-white);
+  background-color: transparent;
+  border: 1px solid var(--tp-common-white);
+  border-radius: 0.3rem;
+}
+.content-modal-info .nav-tabs {
+  border-bottom: 0px;
+  margin-top: 3rem;
+}
+
+.content-modal-info .tab-content {
+  background: var(--background);
+  height: auto;
+
+  /* border-radius: 2rem 2rem 0 0; */
+}
+.content-modal-info .tab-content .container-modal {
+  padding: 3% 5%;
+}
+.content-modal-info h2 {
+  font-size: 1.8rem;
+  line-height: 2rem;
+}
+.container-info {
+  padding: 3%;
+}
+.container-info-x {
+  padding: 0 3%;
+}
+.content-modal-info .content-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+  flex-direction: row;
+}
+.content-modal-info .row-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+  flex-direction: row;
+}
+
+.content-modal-info .column-10 > * {
+  flex-basis: calc(10% - 15px); /* 50% menos el espacio entre elementos (gap) */
+}
+.content-modal-info .column-15 > * {
+  flex-basis: calc(15% - 15px); /* 50% menos el espacio entre elementos (gap) */
+}
+.content-modal-info .column-20 > * {
+  flex-basis: calc(20% - 15px); /* 50% menos el espacio entre elementos (gap) */
+}
+.content-modal-info .column-25 > * {
+  flex-basis: calc(25% - 15px); /* 50% menos el espacio entre elementos (gap) */
+}
+.content-modal-info .column-30 > * {
+  flex-basis: calc(30% - 15px); /* 50% menos el espacio entre elementos (gap) */
+}
+.content-modal-info .column-40 > * {
+  flex-basis: calc(40% - 15px); /* 50% menos el espacio entre elementos (gap) */
+}
+
+.content-modal-info .column-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+  flex-direction: column;
+}
+.content-modal-info .content-info .info span {
+  display: inline-flex;
+  color: var(--black);
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  line-height: 1.2rem;
+  font-size: 1rem;
+}
+
+.content-modal-info .content-info .info p {
+  color: var(--black);
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+  line-height: 1.2rem;
+  font-size: 1rem;
+}
+
+.modal-alert-question .modal-content {
+  background-color: var(--tp-common-primary);
+  background-repeat: repeat-x;
+  background-image: url("/images/utils/navigation.webp");
+}
+.modal-alert-question .modal-header .modal-title {
+  color: var(--tp-common-white);
+  font-size: 1.7rem;
+  line-height: 1.9rem;
+}
+.modal-alert-question .modal-header .btn-close {
+  background: none;
+  font-size: 2rem;
+  opacity: 1;
+  color: var(--tp-common-white);
+  border: none;
+}
+.modal-alert-question button {
+  color: #fff;
+  border: 1px solid #fff;
+}
+.modal-alert-question button:hover {
+  color: #fff;
+  border: 1px solid #fff;
+}
+.modal-alert-question .modal-header,
+.modal-alert-question .modal-footer {
+  border-bottom: 0px;
+  border-top: 0px;
+}
+.modal-alert-question .modal-footer .spinner-border {
+  border-color: #fff;
+  border-right-color: transparent;
+}
+
+@media only screen and (min-width: 1601px) and (max-width: 3000px) {
+}
+
+@media only screen and (min-width: 1400px) and (max-width: 1600px),
+  only screen and (min-width: 1200px) and (max-width: 1399px) {
+}
+
+@media only screen and (min-width: 992px) and (max-width: 1199px) {
+}
+
+.modal-documents .modal-header,
+.modal-documents .modal-footer {
+  border-bottom: 0px;
+  border-top: 0px;
+}
