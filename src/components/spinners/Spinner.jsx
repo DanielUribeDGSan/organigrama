@@ -1,7 +1,6 @@
-// Spinner.jsx
 import PropTypes from "prop-types";
 
-export const Spinner = ({ style, className }) => {
+export const Spinner = ({ style = {}, className = "" }) => {
   return (
     <div
       className={`spinner-border ${className}`}
@@ -17,10 +16,4 @@ export const Spinner = ({ style, className }) => {
 Spinner.propTypes = {
   style: PropTypes.object,
   className: PropTypes.string,
-};
-
-// También es buena práctica añadir defaultProps para props opcionales
-Spinner.defaultProps = {
-  style: {},
-  className: "",
 };

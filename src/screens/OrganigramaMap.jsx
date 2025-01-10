@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Tree, TreeNode } from "react-organizational-chart";
 import _ from "lodash";
 import { styled } from "@mui/material/styles";
@@ -19,11 +19,41 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { useDrag, useDrop } from "react-dnd";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
-import organization from "./org.json";
 import ScrollContainer from "react-indiana-drag-scroll";
 
-import "../App.css";
+// Función de transformación de datos
+const transformApiToOrgStructure = (apiData) => {
+  // Función auxiliar para transformar un nodo y sus hijos
+  const transformNode = (node, level = 0) => {
+    const transformedNode = {
+      level,
+      tradingName: node.nombre,
+      type: node.activo ? 2 : 3, // Si no está activo, usamos type 3
+      account: [],
+      organizationChildRelationship: [],
+    };
+
+    // Si el nodo tiene hijos, los transformamos recursivamente
+    if (node.children && node.children.length > 0) {
+      transformedNode.organizationChildRelationship = node.children.map(
+        (child) => transformNode(child, level + 1)
+      );
+    }
+
+    return transformedNode;
+  };
+
+  // Comenzamos con el subproceso principal
+  const mainProcess = apiData.subprocesos.subprocesos;
+
+  return {
+    level: 0,
+    tradingName: apiData.subprocesos.nombre,
+    type: 1,
+    account: [],
+    organizationChildRelationship: [transformNode(mainProcess, 1)],
+  };
+};
 
 // Estilos usando styled
 const StyledCard = styled(Card)(({ type }) => ({
@@ -152,7 +182,7 @@ function Organization({ org, onCollapse, collapsed }) {
   if (org.type === 1) {
     backgroundColor = "transparent";
     border = "none";
-    color = "#f84531 ";
+    color = "#f84531";
     borderBottom = "2px solid #f84531";
     borderRadius = "0px";
     marginBottom = "5px";
@@ -163,13 +193,13 @@ function Organization({ org, onCollapse, collapsed }) {
     borderBottom = "2px solid #f84531";
   } else if (org.type === 3) {
     backgroundColor = "#fdb4ae";
-    color = "#f84531 ";
+    color = "#f84531";
     border = "2px solid #f84531";
     marginBottom = "5px";
     borderBottom = "2px solid #f84531";
   } else if (org.type === 4) {
     backgroundColor = "transparent";
-    color = "#f84531 ";
+    color = "#f84531";
     border = "2px solid #f84531";
     marginBottom = "5px";
     borderBottom = "2px solid #f84531";
@@ -226,7 +256,7 @@ function Account({ a }) {
   if (a.type === 1) {
     backgroundColor = "transparent";
     border = "none";
-    color = "#f84531 ";
+    color = "#f84531";
     borderBottom = "2px solid #f84531";
     borderRadius = "0px";
     marginBottom = "5px";
@@ -237,13 +267,13 @@ function Account({ a }) {
     borderBottom = "2px solid #f84531";
   } else if (a.type === 3) {
     backgroundColor = "#fdb4ae";
-    color = "#f84531 ";
+    color = "#f84531";
     border = "2px solid #f84531";
     marginBottom = "5px";
     borderBottom = "2px solid #f84531";
   } else if (a.type === 4) {
     backgroundColor = "transparent";
-    color = "#f84531 ";
+    color = "#f84531";
     border = "2px solid #f84531";
     marginBottom = "5px";
     borderBottom = "2px solid #f84531";
@@ -282,7 +312,7 @@ function Product({ p }) {
   if (p.type === 1) {
     backgroundColor = "transparent";
     border = "none";
-    color = "#f84531 ";
+    color = "#f84531";
     borderBottom = "2px solid #f84531";
     borderRadius = "0px";
     marginBottom = "5px";
@@ -293,13 +323,13 @@ function Product({ p }) {
     borderBottom = "2px solid #f84531";
   } else if (p.type === 3) {
     backgroundColor = "#fdb4ae";
-    color = "#f84531 ";
+    color = "#f84531";
     border = "2px solid #f84531";
     marginBottom = "5px";
     borderBottom = "2px solid #f84531";
   } else if (p.type === 4) {
     backgroundColor = "transparent";
-    color = "#f84531 ";
+    color = "#f84531";
     border = "2px solid #f84531";
     marginBottom = "5px";
     borderBottom = "2px solid #f84531";
@@ -325,7 +355,6 @@ function Product({ p }) {
 }
 
 function Node({ o, parent }) {
-  // Removida la prop isLastNode que no se usaba
   const [collapsed, setCollapsed] = React.useState(o.collapsed);
   const handleCollapse = () => {
     setCollapsed(!collapsed);
@@ -431,6 +460,53 @@ const theme = createTheme({
 });
 
 export default function OrganigramaMap() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "http://apipavin.mediaserviceagency.com/api/sub-procesos/1"
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.res === true && result.subprocesos) {
+          const transformedData = transformApiToOrgStructure(result);
+          console.log("Datos transformados:", transformedData);
+          setData(transformedData);
+        } else {
+          throw new Error("Formato de respuesta inválido");
+        }
+      } catch (error) {
+        console.error("Error en fetch:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div className="p-4">Cargando...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 text-red-500">Error: {error}</div>;
+  }
+
+  if (!data) {
+    return <div className="p-4">No hay datos disponibles</div>;
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <MainContainer>
@@ -444,7 +520,7 @@ export default function OrganigramaMap() {
           <ContainerBox>
             <DndProvider backend={HTML5Backend}>
               <TreeContainer>
-                <Node o={organization} />
+                <Node o={data} />
               </TreeContainer>
             </DndProvider>
           </ContainerBox>

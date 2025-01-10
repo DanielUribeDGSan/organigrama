@@ -45,20 +45,166 @@ body {
       left: 0;
       width: 100%;
       height: 100%;
-      pointer-events: none;
-      :nth-child(1) {
+
+      a {
+        text-decoration: none;
+        display: block;
         position: absolute;
-        width: 14%;
-        height: auto;
-        bottom: 18%;
-        left: 43%;
+        z-index: 3;
+        cursor: pointer;
+
+        &:first-child {
+          bottom: 21%;
+          left: 44%;
+          width: 12%;
+          height: 17%;
+        }
+
+        &:nth-child(2) {
+          bottom: 42.8%;
+          left: 43%;
+          width: 14%;
+          height: 23%;
+        }
+        &:nth-child(3) {
+          top: 2%;
+          left: 43%;
+          width: 14%;
+          height: 27%;
+        }
+        &:nth-child(4) {
+          top: 14.6%;
+          right: 10%;
+          width: 14%;
+          height: 27%;
+        }
+        &:nth-child(5) {
+          top: 14.6%;
+          left: 10%;
+          width: 14%;
+          height: 27%;
+        }
+        &:nth-child(6) {
+          bottom: 24.6%;
+          left: 21%;
+          width: 14%;
+          height: 23%;
+        }
+        &:nth-child(7) {
+          bottom: 24.6%;
+          right: 21%;
+          width: 14%;
+          height: 23%;
+        }
+        &:nth-child(8) {
+          top: 27.6%;
+          right: 28.7%;
+          width: 10%;
+          height: 18%;
+        }
+        &:nth-child(9) {
+          top: 43.6%;
+          right: 6%;
+          width: 10%;
+          height: 18%;
+        }
+        &:nth-child(10) {
+          top: 27.6%;
+          left: 29%;
+          width: 10%;
+          height: 18%;
+        }
+        &:nth-child(11) {
+          bottom: 37.6%;
+          left: 6%;
+          width: 10%;
+          height: 18%;
+        }
       }
-      :nth-child(2) {
+
+      .hover-area {
+        width: 100%;
+        height: 100%;
         position: absolute;
+      }
+
+      img {
+        position: absolute;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        pointer-events: none;
+
+        &.visible {
+          opacity: 1;
+        }
+      }
+
+      .circle-1 {
+        width: 11.5%;
+        height: auto;
+        bottom: 19%;
+        left: 44.5%;
+      }
+
+      .circle-2 {
+        width: 15%;
+        height: auto;
+        bottom: 40.8%;
+        left: 42.5%;
+      }
+      .circle-3 {
+        width: 16%;
+        height: auto;
+        top: 1.6%;
+        left: 42%;
+      }
+      .circle-4 {
+        width: 16%;
+        height: auto;
+        top: 14.6%;
+        right: 10%;
+      }
+      .circle-5 {
+        width: 16%;
+        height: auto;
+        top: 14.6%;
+        left: 10%;
+      }
+      .circle-6 {
         width: 14%;
         height: auto;
-        bottom: 41.8%;
-        left: 43%;
+        bottom: 24%;
+        left: 21%;
+      }
+      .circle-7 {
+        width: 14%;
+        height: auto;
+        bottom: 23.9%;
+        right: 20.7%;
+      }
+      .circle-8 {
+        width: 11%;
+        height: auto;
+        top: 27%;
+        right: 28%;
+      }
+      .circle-9 {
+        width: 11%;
+        height: auto;
+        top: 43.5%;
+        right: 5.5%;
+      }
+      .circle-10 {
+        width: 11%;
+        height: auto;
+        top: 26.9%;
+        left: 28.2%;
+      }
+      .circle-11 {
+        width: 11%;
+        height: auto;
+        bottom: 36.9%;
+        left: 5.6%;
       }
     }
   }
