@@ -1,0 +1,52 @@
+.org-chart-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.node-active rect {
+  fill: #f94632;
+  stroke: #f84531;
+  stroke-width: 2px;
+}
+
+.node-active text {
+  fill: #ffc7c3;
+  font-size: 14px;
+  dominant-baseline: middle;
+  text-anchor: middle;
+}
+
+.node-inactive rect {
+  fill: #fdb4ae;
+  stroke: #f84531;
+  stroke-width: 2px;
+}
+
+.node-inactive text {
+  fill: #f84531;
+  font-size: 14px;
+  dominant-baseline: middle;
+  text-anchor: middle;
+}
+
+.edge {
+  stroke: #f84531;
+  stroke-width: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Asegurarse que el texto se ajuste dentro del nodo */
+
+.node-text {
+  font-size: 14px;
+  fill: #333;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}

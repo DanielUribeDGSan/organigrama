@@ -1,531 +1,182 @@
-/* eslint-disable react/prop-types */
-import React, { useEffect, useState } from "react";
-import { Tree, TreeNode } from "react-organizational-chart";
-import _ from "lodash";
-import { styled } from "@mui/material/styles";
-import {
-  Card,
-  CardHeader,
-  Typography,
-  Box,
-  IconButton,
-  CardContent,
-  ThemeProvider,
-  createTheme,
-} from "@mui/material";
+import { useState, useEffect } from "react";
+import { GraphView } from "react-digraph";
+import "./OrganizationChart.css";
 
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { useDrag, useDrop } from "react-dnd";
+const NODE_KEY = "id";
 
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ScrollContainer from "react-indiana-drag-scroll";
-
-// Función de transformación de datos
-const transformApiToOrgStructure = (apiData) => {
-  // Función auxiliar para transformar un nodo y sus hijos
-  const transformNode = (node, level = 0) => {
-    const transformedNode = {
-      level,
-      tradingName: node.nombre,
-      type: node.activo ? 2 : 3, // Si no está activo, usamos type 3
-      account: [],
-      organizationChildRelationship: [],
-    };
-
-    // Si el nodo tiene hijos, los transformamos recursivamente
-    if (node.children && node.children.length > 0) {
-      transformedNode.organizationChildRelationship = node.children.map(
-        (child) => transformNode(child, level + 1)
-      );
-    }
-
-    return transformedNode;
-  };
-
-  // Comenzamos con el subproceso principal
-  const mainProcess = apiData.subprocesos.subprocesos;
-
-  return {
-    level: 0,
-    tradingName: apiData.subprocesos.nombre,
-    type: 1,
-    account: [],
-    organizationChildRelationship: [transformNode(mainProcess, 1)],
-  };
+const GraphConfig = {
+  NodeTypes: {
+    default: {
+      shapeId: "#node",
+      shape: (
+        <symbol viewBox="0 0 200 80" id="node">
+          <rect
+            x="0"
+            y="0"
+            width="200"
+            height="80"
+            rx="10"
+            ry="10"
+            fill="#ffffff"
+            stroke="#333333"
+            strokeWidth="2"
+          />
+        </symbol>
+      ),
+    },
+  },
+  NodeSubtypes: {},
+  EdgeTypes: {
+    default: {
+      shapeId: "#edge",
+      shape: (
+        <symbol viewBox="0 0 50 50" id="edge">
+          <circle cx="25" cy="25" r="8" fill="currentColor" />
+        </symbol>
+      ),
+    },
+  },
 };
 
-// Estilos usando styled
-const StyledCard = styled(Card)(({ type }) => ({
-  display: "inline-block",
-  position: "relative",
-  zIndex: 999999999,
-  borderRadius: 8,
-  width: "100%",
-  maxWidth: type === "main" ? "400px" : "300px",
-  "& .MuiCardHeader-title": {
-    fontSize: "1rem",
-    lineHeight: "1rem",
-    fontWeight: "400",
-    textAlign: "center",
-  },
-  "@media (max-width: 600px)": {
-    maxWidth: "100%",
-  },
-}));
-
-const MainContainer = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.background,
-  minHeight: "100vh",
-  width: "100vw",
-  overflow: "true",
-  backgroundImage: `url("/assets/2.svg")`,
-  backgroundSize: "cover",
-  backgroundRepeat: "no-repeat",
-  backgroundPosition: "center",
-  padding: theme.spacing(2),
-  "@media (max-width: 1024px)": {
-    padding: theme.spacing(2),
-    backgroundImage: `url("/assets/3.svg")`,
-  },
-}));
-
-const ContainerBox = styled(Box)(() => ({
-  width: "80%",
-  margin: "0 auto",
-  "@media (max-width: 1024px)": {
-    padding: theme.spacing(2),
-    width: "100%",
-  },
-  position: "relative",
-  zIndex: 999999999,
-}));
-
-const TreeContainer = styled("div")({
-  width: "100%",
-  display: "flex",
-  justifyContent: "center",
-  "& ul": {
-    padding: "0 0px",
-    "@media (max-width: 600px)": {
-      padding: "0 0px",
+const OrganizationChart = () => {
+  const [state, setState] = useState({
+    graph: {
+      nodes: [],
+      edges: [],
     },
-  },
-  "& .convergingLines": {
-    position: "relative",
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      top: "-20px",
-      left: "calc(50% - 50px)",
-      width: "100px",
-      height: "2px",
-      backgroundColor: "#bbc",
-    },
-    "&::after": {
-      content: '""',
-      position: "absolute",
-      top: "-40px",
-      left: "50%",
-      width: "2px",
-      height: "20px",
-      backgroundColor: "#bbc",
-    },
-  },
-  "& .convergingNode": {
-    marginTop: "40px",
-    position: "relative",
-    display: "flex",
-    justifyContent: "center",
-    width: "100%",
-  },
-});
-
-const ExpandButton = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== "expanded",
-})(({ theme, expanded }) => ({
-  transform: "rotate(0deg)",
-  marginTop: -10,
-  marginLeft: "auto",
-  transition: theme.transitions.create("transform", {
-    duration: theme.transitions.duration.short,
-  }),
-  ...(expanded && {
-    transform: "rotate(180deg)",
-  }),
-}));
-
-function Organization({ org, onCollapse, collapsed }) {
-  const [{ canDrop, isOver }, drop] = useDrop({
-    accept: "account",
-    drop: () => ({ name: org.tradingName }),
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
+    selected: null,
   });
 
-  const isActive = canDrop && isOver;
-  let backgroundColor = "#f84531";
-  let border = "none";
-  let color = "white";
-  let borderBottom = "none";
-  let borderRadius = "8px";
-  let marginBottom = "0px";
+  const transformApiData = (apiData) => {
+    const nodes = [];
+    const edges = [];
+    const levelMap = new Map();
 
-  if (isActive) {
-    backgroundColor = "#ddffd2";
-  } else if (canDrop) {
-    backgroundColor = "#ffeedc";
-  }
+    const processNode = (node, level = 0, parentId = null) => {
+      const nodeId = String(node.id);
 
-  if (org.type === 1) {
-    backgroundColor = "transparent";
-    border = "none";
-    color = "#f84531";
-    borderBottom = "2px solid #f84531";
-    borderRadius = "0px";
-    marginBottom = "5px";
-  } else if (org.type === 2) {
-    backgroundColor = "#f94632";
-    color = "#ffc7c3";
-    marginBottom = "5px";
-    borderBottom = "2px solid #f84531";
-  } else if (org.type === 3) {
-    backgroundColor = "#fdb4ae";
-    color = "#f84531";
-    border = "2px solid #f84531";
-    marginBottom = "5px";
-    borderBottom = "2px solid #f84531";
-  } else if (org.type === 4) {
-    backgroundColor = "transparent";
-    color = "#f84531";
-    border = "2px solid #f84531";
-    marginBottom = "5px";
-    borderBottom = "2px solid #f84531";
-  }
-
-  return (
-    <StyledCard
-      variant="outlined"
-      ref={drop}
-      style={{
-        backgroundColor,
-        border,
-        color,
-        borderBottom,
-        borderRadius,
-        marginBottom,
-      }}
-    >
-      <CardHeader title={org.tradingName} />
-      {onCollapse && (
-        <ExpandButton size="small" onClick={onCollapse} expanded={!collapsed}>
-          <ExpandMoreIcon />
-        </ExpandButton>
-      )}
-    </StyledCard>
-  );
-}
-
-function Account({ a }) {
-  const [{ isDragging }, drag] = useDrag({
-    type: "account",
-    item: () => ({
-      name: a.name,
-      type: "account",
-    }),
-    end: (item, monitor) => {
-      const dropResult = monitor.getDropResult();
-      if (item && dropResult) {
-        alert(`You moved ${item.name} to ${dropResult.name}`);
+      if (!levelMap.has(level)) {
+        levelMap.set(level, []);
       }
-    },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
+      levelMap.get(level).push(nodeId);
 
-  let backgroundColor = "#f84531";
-  let border = "none";
-  let color = "white";
-  let borderBottom = "none";
-  let borderRadius = "8px";
-  let marginBottom = "0px";
+      const levelNodes = levelMap.get(level);
+      const indexInLevel = levelNodes.length - 1;
 
-  if (a.type === 1) {
-    backgroundColor = "transparent";
-    border = "none";
-    color = "#f84531";
-    borderBottom = "2px solid #f84531";
-    borderRadius = "0px";
-    marginBottom = "5px";
-  } else if (a.type === 2) {
-    backgroundColor = "#f94632";
-    color = "#ffc7c3";
-    marginBottom = "5px";
-    borderBottom = "2px solid #f84531";
-  } else if (a.type === 3) {
-    backgroundColor = "#fdb4ae";
-    color = "#f84531";
-    border = "2px solid #f84531";
-    marginBottom = "5px";
-    borderBottom = "2px solid #f84531";
-  } else if (a.type === 4) {
-    backgroundColor = "transparent";
-    color = "#f84531";
-    border = "2px solid #f84531";
-    marginBottom = "5px";
-    borderBottom = "2px solid #f84531";
-  }
+      // Creamos un nuevo tipo de nodo para cada nodo con su propio texto
+      GraphConfig.NodeTypes[nodeId] = {
+        ...GraphConfig.NodeTypes.default,
+        typeText: node.nombre, // Aquí asignamos el nombre del nodo
+      };
 
-  return (
-    <StyledCard
-      variant="outlined"
-      ref={drag}
-      style={{
-        cursor: "pointer",
-        opacity: isDragging ? 0.4 : 1,
-        border,
-        color,
-        borderBottom,
-        borderRadius,
-        marginBottom,
-        backgroundColor,
-      }}
-    >
-      <CardHeader title={a.name} />
-    </StyledCard>
-  );
-}
+      nodes.push({
+        id: nodeId,
+        title: "", // Dejamos el título vacío porque usaremos typeText
+        x: level * 350,
+        y: indexInLevel * 200,
+        type: nodeId, // Usamos el ID como tipo para que cada nodo use su configuración
+      });
 
-function Product({ p }) {
-  if (!p) return null;
+      if (parentId) {
+        edges.push({
+          source: parentId,
+          target: nodeId,
+          type: "default",
+        });
+      }
 
-  let backgroundColor = "#f84531";
-  let border = "none";
-  let color = "white";
-  let borderBottom = "none";
-  let borderRadius = "8px";
-  let marginBottom = "0px";
+      if (node.children) {
+        node.children.forEach((child) => {
+          processNode(child, level + 1, nodeId);
+        });
+      }
+    };
 
-  if (p.type === 1) {
-    backgroundColor = "transparent";
-    border = "none";
-    color = "#f84531";
-    borderBottom = "2px solid #f84531";
-    borderRadius = "0px";
-    marginBottom = "5px";
-  } else if (p.type === 2) {
-    backgroundColor = "#f94632";
-    color = "#ffc7c3";
-    marginBottom = "5px";
-    borderBottom = "2px solid #f84531";
-  } else if (p.type === 3) {
-    backgroundColor = "#fdb4ae";
-    color = "#f84531";
-    border = "2px solid #f84531";
-    marginBottom = "5px";
-    borderBottom = "2px solid #f84531";
-  } else if (p.type === 4) {
-    backgroundColor = "transparent";
-    color = "#f84531";
-    border = "2px solid #f84531";
-    marginBottom = "5px";
-    borderBottom = "2px solid #f84531";
-  }
-
-  return (
-    <StyledCard
-      variant="outlined"
-      style={{
-        backgroundColor,
-        border,
-        color,
-        borderBottom,
-        borderRadius,
-        marginBottom,
-      }}
-    >
-      <CardContent>
-        <Typography variant="subtitle2">{p.name}</Typography>
-      </CardContent>
-    </StyledCard>
-  );
-}
-
-function Node({ o, parent }) {
-  const [collapsed, setCollapsed] = React.useState(o.collapsed);
-  const handleCollapse = () => {
-    setCollapsed(!collapsed);
+    processNode(apiData.subprocesos.subprocesos);
+    return { nodes, edges };
   };
-
-  React.useEffect(() => {
-    o.collapsed = collapsed;
-  }, [collapsed, o]);
-
-  const T = parent
-    ? TreeNode
-    : (props) => (
-        <Tree
-          {...props}
-          lineWidth={"2px"}
-          lineColor={"#bbc"}
-          lineBorderRadius={"12px"}
-          style={{
-            width: "100%",
-            padding: window.innerWidth > 600 ? "20px" : "10px",
-          }}
-        >
-          {props.children}
-        </Tree>
-      );
-
-  const content = (
-    <T
-      label={
-        <Organization
-          org={o}
-          onCollapse={handleCollapse}
-          collapsed={collapsed}
-          key={o.tradingName}
-        />
-      }
-    >
-      {!collapsed && (
-        <>
-          {_.map(o.account, (a) => (
-            <TreeNode key={a.name} label={<Account a={a} />}>
-              {a.product && (
-                <TreeNode
-                  key={`${a.name}-product`}
-                  label={<Product p={a.product} />}
-                />
-              )}
-            </TreeNode>
-          ))}
-          {_.map(o.organizationChildRelationship, (c) => (
-            <Node key={c.tradingName} o={c} parent={o} />
-          ))}
-          {o.tradingName ===
-            "Mandar a traducción a idioma inglés con el proveedos de manera urgente" && (
-            <TreeNode key="createAdocs" />
-          )}
-        </>
-      )}
-    </T>
-  );
-
-  return content;
-}
-
-const theme = createTheme({
-  palette: {
-    background: "#f94632",
-  },
-  typography: {
-    fontFamily: "Roboto, sans-serif",
-    h6: {
-      fontSize: "1rem",
-      "@media (max-width: 600px)": {
-        fontSize: "0.875rem",
-      },
-    },
-    subtitle2: {
-      fontSize: "0.875rem",
-      "@media (max-width: 600px)": {
-        fontSize: "0.75rem",
-      },
-    },
-  },
-  components: {
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          boxShadow: "none",
-        },
-      },
-    },
-    MuiCardHeader: {
-      styleOverrides: {
-        root: {
-          padding: "16px",
-          "@media (max-width: 600px)": {
-            padding: "8px",
-          },
-        },
-      },
-    },
-  },
-});
-
-export default function OrganigramaMap() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "http://apipavin.mediaserviceagency.com/api/sub-procesos/1"
+          "https://apipavin.mediaserviceagency.com/api/sub-procesos/1"
         );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
         const result = await response.json();
 
-        if (result.res === true && result.subprocesos) {
-          const transformedData = transformApiToOrgStructure(result);
-          console.log("Datos transformados:", transformedData);
-          setData(transformedData);
-        } else {
-          throw new Error("Formato de respuesta inválido");
+        if (result.res && result.subprocesos) {
+          const { nodes, edges } = transformApiData(result);
+          setState((prev) => ({
+            ...prev,
+            graph: { nodes, edges },
+          }));
         }
       } catch (error) {
-        console.error("Error en fetch:", error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
+        console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
   }, []);
 
-  if (loading) {
-    return <div className="p-4">Cargando...</div>;
-  }
+  const onNodeMouseEnter = (event) => {
+    const rect = event.currentTarget.querySelector("rect");
+    if (rect) {
+      rect.style.fill = "#666666";
+      rect.style.stroke = "#666666";
+    }
+  };
 
-  if (error) {
-    return <div className="p-4 text-red-500">Error: {error}</div>;
-  }
+  const onNodeMouseLeave = (event) => {
+    const rect = event.currentTarget.querySelector("rect");
+    if (rect) {
+      rect.style.fill = "#333333";
+      rect.style.stroke = "#333333";
+    }
+  };
 
-  if (!data) {
-    return <div className="p-4">No hay datos disponibles</div>;
-  }
+  const onEdgeMouseEnter = (event) => {
+    event.currentTarget.style.stroke = "#666666";
+  };
+
+  const onEdgeMouseLeave = (event) => {
+    event.currentTarget.style.stroke = "#333333";
+  };
+
+  const onSelect = (selected) => {
+    setState((prev) => ({ ...prev, selected }));
+  };
+
+  const containerStyle = {
+    width: "100%",
+    height: "800px",
+    border: "1px solid #ccc",
+  };
 
   return (
-    <ThemeProvider theme={theme}>
-      <MainContainer>
-        <ScrollContainer
-          className="scroll-container"
-          style={{
-            width: "100vw",
-            height: "100vh",
-          }}
-        >
-          <ContainerBox>
-            <DndProvider backend={HTML5Backend}>
-              <TreeContainer>
-                <Node o={data} />
-              </TreeContainer>
-            </DndProvider>
-          </ContainerBox>
-        </ScrollContainer>
-      </MainContainer>
-    </ThemeProvider>
+    <div className="org-chart-container" style={containerStyle}>
+      <GraphView
+        nodeKey={NODE_KEY}
+        nodes={state.graph.nodes}
+        edges={state.graph.edges}
+        selected={state.selected}
+        nodeTypes={GraphConfig.NodeTypes}
+        nodeSubtypes={GraphConfig.NodeSubtypes}
+        edgeTypes={GraphConfig.EdgeTypes}
+        onSelect={onSelect}
+        onNodeMouseEnter={onNodeMouseEnter}
+        onNodeMouseLeave={onNodeMouseLeave}
+        onEdgeMouseEnter={onEdgeMouseEnter}
+        onEdgeMouseLeave={onEdgeMouseLeave}
+        layoutEngineType="HorizontalTree"
+        gridSize={20}
+        gridDotSize={1}
+        nodeSize={200}
+        minZoom={0.5}
+        maxZoom={1.5}
+      />
+    </div>
   );
-}
+};
+
+export default OrganizationChart;
