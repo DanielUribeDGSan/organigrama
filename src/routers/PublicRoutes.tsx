@@ -1,14 +1,14 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { OrganigramaMain } from "../screens/OrganigramaMain";
-import OrganizationChart from "../screens/OrganigramaMap";
+import OrganigramaHorizontal from "../screens/OrganigramaMap";
 
 const PublicRoutes = () => {
   return (
     <Routes>
       {/* <Route path="/login" element={<Login />} />*/}
       <Route path="/" element={<OrganigramaMain />} />
-      <Route path="/organigrama" element={<OrganizationChart />} />
+      <Route path="/organigrama" element={<OrganigramaHorizontal />} />
       <Route path="/*" element={<Navigate to="/" />} />
     </Routes>
   );

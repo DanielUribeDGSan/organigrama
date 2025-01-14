@@ -1,99 +1,63 @@
-import { useState, useEffect } from "react";
-import { GraphView } from "react-digraph";
-import "./OrganizationChart.css";
+import React, { useEffect, useState } from "react";
+import mermaid from "mermaid";
 
-const NODE_KEY = "id";
+const OrganigramaHorizontal = () => {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [diagramDefinition, setDiagramDefinition] = useState("");
 
-const GraphConfig = {
-  NodeTypes: {
-    default: {
-      shapeId: "#node",
-      shape: (
-        <symbol viewBox="0 0 200 80" id="node">
-          <rect
-            x="0"
-            y="0"
-            width="200"
-            height="80"
-            rx="10"
-            ry="10"
-            fill="#ffffff"
-            stroke="#333333"
-            strokeWidth="2"
-          />
-        </symbol>
-      ),
-    },
-  },
-  NodeSubtypes: {},
-  EdgeTypes: {
-    default: {
-      shapeId: "#edge",
-      shape: (
-        <symbol viewBox="0 0 50 50" id="edge">
-          <circle cx="25" cy="25" r="8" fill="currentColor" />
-        </symbol>
-      ),
-    },
-  },
-};
+  useEffect(() => {
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "default",
+      flowchart: {
+        htmlLabels: true,
+        curve: "basis",
+        nodeSpacing: 80,
+        rankSpacing: 70,
+        padding: 0,
+      },
+    });
+  }, []);
 
-const OrganizationChart = () => {
-  const [state, setState] = useState({
-    graph: {
-      nodes: [],
-      edges: [],
-    },
-    selected: null,
-  });
+  const generateNodeId = (prefix, index) => `${prefix}${index}`;
 
-  const transformApiData = (apiData) => {
-    const nodes = [];
-    const edges = [];
-    const levelMap = new Map();
+  const processNodes = (data) => {
+    const nodeMap = new Map();
+    const connections = [];
+    let counter = 0;
 
-    const processNode = (node, level = 0, parentId = null) => {
-      const nodeId = String(node.id);
+    const processNode = (node, parentId = null) => {
+      counter++;
+      const currentId = generateNodeId("node", counter);
 
-      if (!levelMap.has(level)) {
-        levelMap.set(level, []);
-      }
-      levelMap.get(level).push(nodeId);
-
-      const levelNodes = levelMap.get(level);
-      const indexInLevel = levelNodes.length - 1;
-
-      // Creamos un nuevo tipo de nodo para cada nodo con su propio texto
-      GraphConfig.NodeTypes[nodeId] = {
-        ...GraphConfig.NodeTypes.default,
-        typeText: node.nombre, // Aquí asignamos el nombre del nodo
-      };
-
-      nodes.push({
-        id: nodeId,
-        title: "", // Dejamos el título vacío porque usaremos typeText
-        x: level * 350,
-        y: indexInLevel * 200,
-        type: nodeId, // Usamos el ID como tipo para que cada nodo use su configuración
+      nodeMap.set(currentId, {
+        id: currentId,
+        label: node.nombre,
+        activo: node.activo !== undefined ? node.activo : 1,
       });
 
       if (parentId) {
-        edges.push({
-          source: parentId,
-          target: nodeId,
-          type: "default",
-        });
+        connections.push(`${parentId} --> ${currentId}`);
       }
 
-      if (node.children) {
+      // Procesar subprocesos si existen
+      if (node.subprocesos) {
+        processNode(node.subprocesos, currentId);
+      }
+
+      // Procesar children si existen
+      if (node.children && Array.isArray(node.children)) {
         node.children.forEach((child) => {
-          processNode(child, level + 1, nodeId);
+          processNode(child, currentId);
         });
       }
     };
 
-    processNode(apiData.subprocesos.subprocesos);
-    return { nodes, edges };
+    // Comenzar el procesamiento con el nodo raíz
+    processNode(data.subprocesos);
+
+    return { nodeMap, connections };
   };
 
   useEffect(() => {
@@ -102,81 +66,85 @@ const OrganizationChart = () => {
         const response = await fetch(
           "https://apipavin.mediaserviceagency.com/api/sub-procesos/1"
         );
-        const result = await response.json();
 
-        if (result.res && result.subprocesos) {
-          const { nodes, edges } = transformApiData(result);
-          setState((prev) => ({
-            ...prev,
-            graph: { nodes, edges },
-          }));
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Datos de la API:", result); // Para depuración
+
+        if (result.res === true && result.subprocesos) {
+          const { nodeMap, connections } = processNodes(result);
+
+          let definition = "graph LR\n";
+
+          // Configurar estilos globales
+          definition += "  %% Configuración de estilos\n";
+          definition +=
+            "  classDef active fill:#f94632,stroke:#f84531,color:#ffc7c3\n";
+          definition +=
+            "  classDef inactive fill:#fdb4ae,stroke:#f84531,color:#f84531\n";
+          definition +=
+            "  classDef default fill:#f94632,stroke:#f84531,color:#ffc7c3\n";
+
+          // Agregar nodos
+          nodeMap.forEach((node) => {
+            definition += `  ${node.id}["${node.label}"]\n`;
+            if (node.activo === 0) {
+              definition += `  class ${node.id} inactive\n`;
+            } else {
+              definition += `  class ${node.id} active\n`;
+            }
+          });
+
+          // Agregar conexiones
+          connections.forEach((connection) => {
+            definition += `  ${connection}\n`;
+          });
+
+          console.log("Definición del diagrama:", definition); // Para depuración
+          setDiagramDefinition(definition);
+        } else {
+          throw new Error("Formato de respuesta inválido");
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error en fetch:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  const onNodeMouseEnter = (event) => {
-    const rect = event.currentTarget.querySelector("rect");
-    if (rect) {
-      rect.style.fill = "#666666";
-      rect.style.stroke = "#666666";
+  useEffect(() => {
+    if (diagramDefinition) {
+      mermaid.contentLoaded();
     }
-  };
+  }, [diagramDefinition]);
 
-  const onNodeMouseLeave = (event) => {
-    const rect = event.currentTarget.querySelector("rect");
-    if (rect) {
-      rect.style.fill = "#333333";
-      rect.style.stroke = "#333333";
-    }
-  };
+  if (loading) {
+    return <div className="p-4">Cargando...</div>;
+  }
 
-  const onEdgeMouseEnter = (event) => {
-    event.currentTarget.style.stroke = "#666666";
-  };
-
-  const onEdgeMouseLeave = (event) => {
-    event.currentTarget.style.stroke = "#333333";
-  };
-
-  const onSelect = (selected) => {
-    setState((prev) => ({ ...prev, selected }));
-  };
-
-  const containerStyle = {
-    width: "100%",
-    height: "800px",
-    border: "1px solid #ccc",
-  };
+  if (error) {
+    return <div className="p-4 text-red-500">Error: {error}</div>;
+  }
 
   return (
-    <div className="org-chart-container" style={containerStyle}>
-      <GraphView
-        nodeKey={NODE_KEY}
-        nodes={state.graph.nodes}
-        edges={state.graph.edges}
-        selected={state.selected}
-        nodeTypes={GraphConfig.NodeTypes}
-        nodeSubtypes={GraphConfig.NodeSubtypes}
-        edgeTypes={GraphConfig.EdgeTypes}
-        onSelect={onSelect}
-        onNodeMouseEnter={onNodeMouseEnter}
-        onNodeMouseLeave={onNodeMouseLeave}
-        onEdgeMouseEnter={onEdgeMouseEnter}
-        onEdgeMouseLeave={onEdgeMouseLeave}
-        layoutEngineType="HorizontalTree"
-        gridSize={20}
-        gridDotSize={1}
-        nodeSize={200}
-        minZoom={0.5}
-        maxZoom={1.5}
-      />
+    <div className="w-full max-w-full mx-auto p-4">
+      <div className="bg-white shadow-lg rounded-lg p-6">
+        <h2 className="text-2xl font-bold mb-6 text-gray-800">
+          Organigrama de Procesos
+        </h2>
+        <div className="mermaid text-center overflow-x-auto">
+          {diagramDefinition}
+        </div>
+      </div>
     </div>
   );
 };
 
-export default OrganizationChart;
+export default OrganigramaHorizontal;
