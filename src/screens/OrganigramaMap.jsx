@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import mermaid from "mermaid";
 
 const OrganigramaHorizontal = () => {
@@ -41,12 +41,10 @@ const OrganigramaHorizontal = () => {
         connections.push(`${parentId} --> ${currentId}`);
       }
 
-      // Procesar subprocesos si existen
       if (node.subprocesos) {
         processNode(node.subprocesos, currentId);
       }
 
-      // Procesar children si existen
       if (node.children && Array.isArray(node.children)) {
         node.children.forEach((child) => {
           processNode(child, currentId);
@@ -54,9 +52,7 @@ const OrganigramaHorizontal = () => {
       }
     };
 
-    // Comenzar el procesamiento con el nodo raíz
     processNode(data.subprocesos);
-
     return { nodeMap, connections };
   };
 
@@ -72,14 +68,11 @@ const OrganigramaHorizontal = () => {
         }
 
         const result = await response.json();
-        console.log("Datos de la API:", result); // Para depuración
 
         if (result.res === true && result.subprocesos) {
           const { nodeMap, connections } = processNodes(result);
 
           let definition = "graph LR\n";
-
-          // Configurar estilos globales
           definition += "  %% Configuración de estilos\n";
           definition +=
             "  classDef active fill:#f94632,stroke:#f84531,color:#ffc7c3\n";
@@ -88,7 +81,6 @@ const OrganigramaHorizontal = () => {
           definition +=
             "  classDef default fill:#f94632,stroke:#f84531,color:#ffc7c3\n";
 
-          // Agregar nodos
           nodeMap.forEach((node) => {
             definition += `  ${node.id}["${node.label}"]\n`;
             if (node.activo === 0) {
@@ -98,12 +90,10 @@ const OrganigramaHorizontal = () => {
             }
           });
 
-          // Agregar conexiones
           connections.forEach((connection) => {
             definition += `  ${connection}\n`;
           });
 
-          console.log("Definición del diagrama:", definition); // Para depuración
           setDiagramDefinition(definition);
         } else {
           throw new Error("Formato de respuesta inválido");
@@ -126,22 +116,25 @@ const OrganigramaHorizontal = () => {
   }, [diagramDefinition]);
 
   if (loading) {
-    return <div className="p-4">Cargando...</div>;
+    return (
+      <div className="h-screen w-screen flex items-center justify-center">
+        Cargando...
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">Error: {error}</div>;
+    return (
+      <div className="h-screen w-screen flex items-center justify-center text-red-500">
+        Error: {error}
+      </div>
+    );
   }
 
   return (
-    <div className="w-full max-w-full mx-auto p-4">
-      <div className="bg-white shadow-lg rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          Organigrama de Procesos
-        </h2>
-        <div className="mermaid text-center overflow-x-auto">
-          {diagramDefinition}
-        </div>
+    <div className="container-map">
+      <div className="w-100 overflow-auto">
+        <div className="mermaid w-full h-full">{diagramDefinition}</div>
       </div>
     </div>
   );
