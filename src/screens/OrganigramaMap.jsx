@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import mermaid from "mermaid";
 
 const OrganigramaHorizontal = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [diagramDefinition, setDiagramDefinition] = useState("");
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     mermaid.initialize({
@@ -35,6 +36,8 @@ const OrganigramaHorizontal = () => {
         id: currentId,
         label: node.nombre,
         activo: node.activo !== undefined ? node.activo : 1,
+        color: node.color || "#f94632",
+        colorTexto: node.color_texto || "#ffffff",
       });
 
       if (parentId) {
@@ -68,27 +71,20 @@ const OrganigramaHorizontal = () => {
         }
 
         const result = await response.json();
+        setData(result);
 
         if (result.res === true && result.subprocesos) {
           const { nodeMap, connections } = processNodes(result);
 
           let definition = "graph LR\n";
-          definition += "  %% Configuración de estilos\n";
-          definition +=
-            "  classDef active fill:#f94632,stroke:#f84531,color:#ffc7c3\n";
-          definition +=
-            "  classDef inactive fill:#fdb4ae,stroke:#f84531,color:#f84531\n";
-          definition +=
-            "  classDef default fill:#f94632,stroke:#f84531,color:#ffc7c3\n";
 
+          // Agregar nodos con sus colores personalizados
           nodeMap.forEach((node) => {
             definition += `  ${node.id}["${node.label}"]\n`;
-            if (node.activo === 0) {
-              definition += `  class ${node.id} inactive\n`;
-            } else {
-              definition += `  class ${node.id} active\n`;
-            }
+            definition += `  style ${node.id} fill:${node.color},stroke:${node.color},color:${node.colorTexto}\n`;
           });
+
+          // Agregar conexiones con el color del fondo
 
           connections.forEach((connection) => {
             definition += `  ${connection}\n`;
@@ -132,8 +128,14 @@ const OrganigramaHorizontal = () => {
   }
 
   return (
-    <div className="container-map">
-      <div className="w-100 overflow-auto">
+    <div
+      className="h-screen w-screen flex flex-col"
+      style={{
+        backgroundColor: data?.proceso?.color_fondo || "#1d40be",
+        minHeight: "100vh",
+      }}
+    >
+      <div className="flex-1 overflow-auto">
         <div className="mermaid w-full h-full">{diagramDefinition}</div>
       </div>
     </div>
