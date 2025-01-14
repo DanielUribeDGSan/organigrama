@@ -5,4 +5,13 @@
   width: 100%;
   flex: 1;
   align-items: center;
+
+  p {
+    font-size: 30px;
+    line-height: 40px;
+  }
+  rect {
+    rx: 10;
+    box-shadow: 0 4px 12px 0 #00000026;
+  }
 }
