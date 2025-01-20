@@ -1,0 +1,46 @@
+.container-map {
+  height: 100%;
+  min-height: 100vh;
+  display: flex;
+  width: 100%;
+  flex: 1;
+  align-items: center;
+  overflow-y: hidden;
+
+  p {
+    font-size: 30px;
+    line-height: 40px;
+  }
+  rect {
+    rx: 10;
+    box-shadow: 0 4px 12px 0 #00000026;
+  }
+}
+
+.mermaid {
+  height: auto;
+  overflow-y: hidden;
+  margin-top: 3%;
+  @media (max-width: 1000px) {
+    margin-top: 0;
+  }
+}
+
+:global(.node rect) {
+  width: 300px !important;
+  min-height: 100px !important;
+}
+
+:global(.edgeLabel) {
+  background-color: transparent !important;
+}
+
+.scroll-container {
+  overflow-x: auto;
+  height: 100%;
+  position: relative;
+  z-index: 9;
+  display: flex;
+  min-height: 100vh;
+  padding: 1rem;
+}
