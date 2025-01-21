@@ -11,7 +11,7 @@ export const Card = ({
 }) => {
   useEffect(() => {
     // Initialize Bootstrap tooltips
-    if (node.tipo_sub_proceso_id === 4 && node.tooltip) {
+    if (node?.tipo_sub_proceso_id === 4 && node?.tooltip) {
       const tooltipTriggerList = document.querySelectorAll(
         '[data-bs-toggle="tooltip"]'
       );
@@ -22,21 +22,21 @@ export const Card = ({
   }, []);
 
   const getNodeContent = () => {
-    switch (node.tipo_sub_proceso_id) {
+    switch (node?.tipo_sub_proceso_id) {
       case 2:
         // Image with PDF link
-        if (node.imagen) {
+        if (node?.imagen) {
           return (
             <a
-              href={node.url_archivo}
+              href={node?.url_archivo}
               target="_blank"
               rel="noopener noreferrer"
               className="d-block"
               onClick={(e) => e.stopPropagation()}
             >
               <img
-                src={`https://apipavin.mediaserviceagency.com/storage/${node.imagen}`}
-                alt={node.nombre || "Node image"}
+                src={`https://apipavin.mediaserviceagency.com/storage/${node?.imagen}`}
+                alt={node?.nombre || "Node image"}
                 className="img-fluid mx-auto d-block"
                 style={{ width: "96px", height: "96px", objectFit: "contain" }}
               />
@@ -49,12 +49,12 @@ export const Card = ({
         // Node with modal
         return (
           <div className="p-3 text-center">
-            {node.nombre}
-            {node.modal && (
+            {node?.nombre}
+            {node?.modal && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onModalOpen(node.modal);
+                  onModalOpen(node?.modal);
                 }}
                 className="btn btn-link btn-sm ms-2 p-0"
               >
@@ -71,22 +71,22 @@ export const Card = ({
             className="p-3 text-center"
             data-bs-toggle="tooltip"
             data-bs-placement="top"
-            title={node.tooltip || ""}
+            title={node?.tooltip || ""}
           >
-            {node.nombre}
+            {node?.nombre}
           </div>
         );
 
       default:
         // Regular node
-        return <div className="p-3 text-center">{node.nombre}</div>;
+        return <div className="p-3 text-center">{node?.nombre}</div>;
     }
   };
 
   const style = {
-    backgroundColor: node.color || "transparent",
-    color: node.color_texto || "#000000",
-    border: node.tipo_sub_proceso_id === 4 ? "2px solid" : "none",
+    backgroundColor: node?.color || "transparent",
+    color: node?.color_texto || "#000000",
+    border: node?.tipo_sub_proceso_id === 4 ? "2px solid" : "none",
     borderRadius: "8px",
     marginBottom: "5px",
     cursor: hasChildren ? "pointer" : "default",

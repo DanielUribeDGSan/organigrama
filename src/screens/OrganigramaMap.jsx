@@ -5,6 +5,7 @@ import bootstrapBundleMin from "bootstrap/dist/js/bootstrap.bundle.min";
 import "./OrganigramaMap.scss";
 import { Card } from "./Card";
 import ScrollContainer from "react-indiana-drag-scroll";
+import { useParams } from "react-router-dom";
 
 // Modal component with Bootstrap classes
 const Modal = ({ isOpen, onClose, content }) => {
@@ -88,14 +89,14 @@ function Node({ node, parent }) {
               node={node}
               onModalOpen={handleModalOpen}
               onCollapse={handleCollapse}
-              hasChildren={node.children?.length > 0}
+              hasChildren={node?.children?.length > 0}
               collapsed={collapsed}
             />
           </div>
         }
       >
         {!collapsed &&
-          node.children?.map((child) => (
+          node?.children?.map((child) => (
             <Node key={child.id} node={child} parent={node} />
           ))}
       </T>
@@ -112,12 +113,13 @@ export default function OrganigramaMap() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { slug } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "https://apipavin.mediaserviceagency.com/api/sub-procesos/1"
+          `https://apipavin.mediaserviceagency.com/api/sub-procesos/${slug}`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

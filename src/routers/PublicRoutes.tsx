@@ -8,7 +8,7 @@ const PublicRoutes = () => {
     <Routes>
       {/* <Route path="/login" element={<Login />} />*/}
       <Route path="/" element={<OrganigramaMain />} />
-      <Route path="/organigrama" element={<OrganigramaMap />} />
+      <Route path="/organigrama/:slug" element={<OrganigramaMap />} />
       <Route path="/*" element={<Navigate to="/" />} />
     </Routes>
   );

@@ -42,14 +42,14 @@ export const OrganigramaMain = () => {
               onMouseLeave={() => setHoverCircle1(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/local-disposition">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle2(true)}
               onMouseLeave={() => setHoverCircle2(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/labelling">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle3(true)}
