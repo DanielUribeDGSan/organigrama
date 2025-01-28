@@ -80,7 +80,7 @@ export const CustomizedMenus = ({ options }) => {
           fontSize: "1.2rem",
         }}
       >
-        Organigramas
+        Menu
       </Button>
       <StyledMenu
         id="demo-customized-menu"
@@ -94,7 +94,7 @@ export const CustomizedMenus = ({ options }) => {
         <Link to={"/organigrama"} style={{ textDecoration: "none" }}>
           <MenuItem onClick={handleClose} disableRipple>
             <HomeIcon />
-            Inicio
+            HOME
           </MenuItem>
         </Link>
         {options.map(({ nombre, url }, key) => (
