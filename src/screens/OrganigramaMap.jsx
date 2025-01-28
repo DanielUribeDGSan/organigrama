@@ -4,48 +4,41 @@ import _ from "lodash";
 import bootstrapBundleMin from "bootstrap/dist/js/bootstrap.bundle.min";
 import "./OrganigramaMap.scss";
 import { Card } from "./Card";
-import ScrollContainer from "react-indiana-drag-scroll";
 import { useParams } from "react-router-dom";
+import { CustomModal } from "../components/modal/CustomModal";
+import { CustomizedMenus } from "../components/menu/MenuTop";
 
-// Modal component with Bootstrap classes
-const Modal = ({ isOpen, onClose, content }) => {
-  useEffect(() => {
-    const initTooltips = () => {
-      const tooltipTriggerList = document.querySelectorAll(
-        '[data-bs-toggle="tooltip"]'
-      );
-      return [...tooltipTriggerList].map(
-        (tooltipTriggerEl) => new bootstrapBundleMin.Tooltip(tooltipTriggerEl)
-      );
-    };
+const defaultPositions = [
+  { top: "5%", left: "10%" },
+  { top: "5%", left: "50%" },
+  { top: "5%", left: "90%" },
+  { top: "50%", left: "5%" },
+  { top: "50%", left: "95%" },
+  { top: "95%", left: "10%" },
+  { top: "95%", left: "50%" },
+  { top: "95%", left: "90%" },
+];
 
-    const tooltipTimeout = setTimeout(initTooltips, 3000);
-    return () => clearTimeout(tooltipTimeout);
-  }, []);
-
-  if (!isOpen) return null;
+const DecorativeImage = ({ src, index, positions = defaultPositions }) => {
+  const position = positions[index % positions.length];
 
   return (
-    <div
-      className="modal fade show"
-      style={{ display: isOpen ? "block" : "none" }}
-    >
-      <div className="modal-dialog modal-lg modal-dialog-centered">
-        <div className="modal-content">
-          <div className="modal-header">
-            <button
-              type="button"
-              className="btn-close"
-              onClick={onClose}
-            ></button>
-          </div>
-          <div className="modal-body">
-            <div dangerouslySetInnerHTML={{ __html: content }} />
-          </div>
-        </div>
-      </div>
-      <div className="modal-backdrop fade show" onClick={onClose}></div>
-    </div>
+    <img
+      src={`https://apipavin.mediaserviceagency.com/storage/${src}`}
+      alt="decorative"
+      className="decorative-image floating-animation"
+      style={{
+        position: "absolute",
+        ...position,
+        width: "120px",
+        height: "auto",
+        objectFit: "contain",
+        zIndex: 1,
+        opacity: 1,
+        transition: "all 0.3s ease",
+        pointerEvents: "none",
+      }}
+    />
   );
 };
 
@@ -100,7 +93,8 @@ function Node({ node, parent }) {
             <Node key={child.id} node={child} parent={node} />
           ))}
       </T>
-      <Modal
+
+      <CustomModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         content={modalContent}
@@ -110,26 +104,68 @@ function Node({ node, parent }) {
 }
 
 export default function OrganigramaMap() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
+  const [enlacesData, setEnlacesData] = useState([]);
+
+  const [imagesData, setImagesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { slug } = useParams();
 
+  const customPositions = [
+    { top: "2%", left: "2%" },
+    { top: "2%", left: "30%" },
+    { top: "15%", left: "10%" },
+    { top: "20%", left: "20%" },
+    { top: "35%", left: "1%" },
+    { top: "45%", left: "10%" },
+    { top: "55%", left: "2%" },
+    { top: "65%", left: "15%" },
+    { top: "75%", left: "1%" },
+    { top: "85%", left: "40%" },
+
+    { top: "2%", left: "62%" },
+    { top: "5%", left: "92%" },
+    { top: "20%", left: "85%" },
+    { top: "25%", left: "60%" },
+    { top: "40%", left: "90%" },
+    { top: "45%", left: "75%" },
+    { top: "60%", left: "82%" },
+    { top: "70%", left: "90%" },
+    { top: "70%", left: "70%" },
+  ];
+
+  const decorativeImages = imagesData?.flatMap((img) => [img.imagen]) || [];
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
+        // Fetch subprocesos data
+        const subprocesosResponse = await fetch(
           `https://apipavin.mediaserviceagency.com/api/sub-procesos/${slug}`
         );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!subprocesosResponse.ok) {
+          throw new Error(`HTTP error! status: ${subprocesosResponse.status}`);
+        }
+        const subprocesosResult = await subprocesosResponse.json();
+
+        // Fetch enlaces data
+        const enlacesResponse = await fetch(
+          `https://apipavin.mediaserviceagency.com/api/enlaces/${slug}`
+        );
+        if (!enlacesResponse.ok) {
+          throw new Error(`HTTP error! status: ${enlacesResponse.status}`);
+        }
+        const enlacesResult = await enlacesResponse.json();
+
+        // Update states based on responses
+        if (subprocesosResult.res === true && subprocesosResult.subprocesos) {
+          setData(subprocesosResult.subprocesos);
+          setImagesData(subprocesosResult.imagenes);
         }
 
-        const result = await response.json();
-        if (result.res === true && result.subprocesos) {
-          setData(result.subprocesos);
-        } else {
-          throw new Error("Invalid response format");
+        if (enlacesResult.res === true) {
+          setEnlacesData(enlacesResult?.enlaces);
         }
       } catch (error) {
         console.error("Fetch error:", error);
@@ -140,8 +176,7 @@ export default function OrganigramaMap() {
     };
 
     fetchData();
-  }, []);
-
+  }, [slug]);
   if (loading) {
     return <div className="p-3">Loading...</div>;
   }
@@ -153,17 +188,32 @@ export default function OrganigramaMap() {
   if (!data) {
     return <div className="p-3">No data available</div>;
   }
-  console.log("data", data.color_fondo);
+  console.log("enlacesData", enlacesData);
 
   return (
     <div
-      className="container-map"
+      className="container-map position-relative"
       style={{
         backgroundColor: data.color_fondo || "#1d40be",
         backgroundImage: `url(https://apipavin.mediaserviceagency.com/storage/${data.imagen})`,
         backgroundSize: "cover",
       }}
     >
+      <CustomizedMenus options={enlacesData} />
+      <div
+        className="position-absolute w-100 h-100"
+        style={{ pointerEvents: "none" }}
+      >
+        {decorativeImages.map((imagen, index) => (
+          <DecorativeImage
+            key={index}
+            src={imagen}
+            index={index}
+            positions={customPositions} // Pasamos las posiciones personalizadas
+          />
+        ))}
+      </div>
+
       <div className="container-fluid">
         <div className="row">
           <div className="col position-relative" style={{ zIndex: 50 }}>

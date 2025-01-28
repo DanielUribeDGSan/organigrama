@@ -209,3 +209,29 @@ body {
     }
   }
 }
+
+@keyframes floating {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(5px, 5px) rotate(1deg);
+  }
+  50% {
+    transform: translate(0, 8px) rotate(0deg);
+  }
+  75% {
+    transform: translate(-5px, 5px) rotate(-1deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.floating-animation {
+  animation: floating 6s ease-in-out infinite;
+}
+
+.decorative-image {
+  will-change: transform;
+}
