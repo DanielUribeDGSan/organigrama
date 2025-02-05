@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Tree, TreeNode } from "react-organizational-chart";
 import _ from "lodash";
-import bootstrapBundleMin from "bootstrap/dist/js/bootstrap.bundle.min";
 import "./OrganigramaMap.scss";
 import { Card } from "./Card";
 import { useParams } from "react-router-dom";
@@ -122,7 +121,7 @@ export default function OrganigramaMap() {
     { top: "55%", left: "2%" },
     { top: "65%", left: "15%" },
     { top: "75%", left: "1%" },
-    { top: "85%", left: "40%" },
+    { top: "80%", left: "40%" },
 
     { top: "2%", left: "62%" },
     { top: "5%", left: "92%" },

@@ -81,7 +81,7 @@ body {
         &:nth-child(5) {
           top: 14.6%;
           left: 10%;
-          width: 14%;
+          width: 16%;
           height: 27%;
         }
         &:nth-child(6) {
@@ -133,6 +133,7 @@ body {
         opacity: 0;
         transition: opacity 0.3s ease-in-out;
         pointer-events: none;
+        border-radius: 100%;
 
         &.visible {
           opacity: 1;

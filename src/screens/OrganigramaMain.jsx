@@ -42,28 +42,28 @@ export const OrganigramaMain = () => {
               onMouseLeave={() => setHoverCircle1(false)}
             />
           </Link>
-          <Link to="/organigrama/local-disposition">
+          <Link to="/organigrama">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle2(true)}
               onMouseLeave={() => setHoverCircle2(false)}
             />
           </Link>
-          <Link to="/organigrama/labelling">
+          <Link to="/organigrama">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle3(true)}
               onMouseLeave={() => setHoverCircle3(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/labelling">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle4(true)}
               onMouseLeave={() => setHoverCircle4(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/local-disposition">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle5(true)}
@@ -119,23 +119,23 @@ export const OrganigramaMain = () => {
                 className={`circle-1 ${hoverCircle1 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_2.png"
+                src="/assets/img/main/PTW_CIRCULOS_6.png"
                 className={`circle-2 ${hoverCircle2 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_3.png"
+                src="/assets/img/main/PTW_CIRCULOS_11.png"
                 className={`circle-3 ${hoverCircle3 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_4.png"
+                src="/assets/img/main/PTW_CIRCULOS_3.png"
                 className={`circle-4 ${hoverCircle4 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_5.png"
+                src="/assets/img/main/PTW_CIRCULOS_2.png"
                 className={`circle-5 ${hoverCircle5 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_6.png"
+                src="/assets/img/main/PTW_CIRCULOS_9.png"
                 className={`circle-6 ${hoverCircle6 ? "visible" : ""}`}
               />
               <img
@@ -147,7 +147,7 @@ export const OrganigramaMain = () => {
                 className={`circle-8 ${hoverCircle8 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_9.png"
+                src="/assets/img/main/PTW_CIRCULOS_4.png"
                 className={`circle-9 ${hoverCircle9 ? "visible" : ""}`}
               />
               <img
@@ -155,7 +155,7 @@ export const OrganigramaMain = () => {
                 className={`circle-10 ${hoverCircle10 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_11.png"
+                src="/assets/img/main/PTW_CIRCULOS_5.png"
                 className={`circle-11 ${hoverCircle11 ? "visible" : ""}`}
               />
             </>
