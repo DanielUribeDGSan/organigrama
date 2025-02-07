@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Tree, TreeNode } from "react-organizational-chart";
-import Xarrow from "react-xarrows";
+import ScrollContainer from "react-indiana-drag-scroll";
 import { ArcherContainer, ArcherElement } from "react-archer";
 import _ from "lodash";
 import "./OrganigramaMap.scss";
@@ -171,9 +171,11 @@ function Node({ node, parent, allNodes }) {
                         targetAnchor: "left",
                         sourceAnchor: "right",
                         style: {
-                          strokeDasharray: "5,5",
-                          stroke: "#f4b042",
+                          // strokeDasharray: "5,5",
+                          stroke: "#bbc",
                           strokeWidth: 2,
+                          endMarker: false,
+                          startMarker: true,
                         },
                         label: null,
                         className: "custom-arrow",
@@ -319,47 +321,49 @@ export default function OrganigramaMap() {
         backgroundSize: "cover",
       }}
     >
-      <CustomizedMenus options={enlacesData} />
-      <div
-        className="position-absolute w-100 h-100"
-        style={{ pointerEvents: "none" }}
-      >
-        {decorativeImages.map((imagen, index) => (
-          <DecorativeImage
-            key={index}
-            src={imagen}
-            index={index}
-            positions={customPositions} // Pasamos las posiciones personalizadas
-          />
-        ))}
-      </div>
+      <ScrollContainer className="scroll-container" hideScrollbars={false}>
+        <CustomizedMenus options={enlacesData} />
+        <div
+          className="position-absolute w-100 h-100"
+          style={{ pointerEvents: "none" }}
+        >
+          {decorativeImages.map((imagen, index) => (
+            <DecorativeImage
+              key={index}
+              src={imagen}
+              index={index}
+              positions={customPositions} // Pasamos las posiciones personalizadas
+            />
+          ))}
+        </div>
 
-      <div className="container-fluid">
-        <div className="row">
-          <div className="col position-relative" style={{ zIndex: 50 }}>
-            <div className="d-block pt-50 pb-50">
-              <ArcherContainer
-                strokeColor="#f4b042"
-                noCurves={false}
-                offset={0}
-                style={{
-                  height: "100%",
-                  width: "100%",
-                }}
-                svgContainerStyle={{
-                  overflow: "visible",
-                  position: "absolute",
-                }}
-              >
-                <Node
-                  node={data.subprocesos}
-                  allNodes={flattenNodes(data.subprocesos)}
-                />
-              </ArcherContainer>
+        <div className="container-fluid">
+          <div className="row">
+            <div className="col position-relative" style={{ zIndex: 50 }}>
+              <div className="d-block pt-50 pb-50">
+                <ArcherContainer
+                  strokeColor="#bbc"
+                  noCurves={false}
+                  offset={0}
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                  }}
+                  svgContainerStyle={{
+                    overflow: "visible",
+                    position: "absolute",
+                  }}
+                >
+                  <Node
+                    node={data.subprocesos}
+                    allNodes={flattenNodes(data.subprocesos)}
+                  />
+                </ArcherContainer>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </ScrollContainer>
     </div>
   );
 }
