@@ -191,7 +191,7 @@ export default function OrganigramaMap() {
 
   return (
     <div
-      className="container-map position-relative"
+      className="container-map position-relative w-100"
       style={{
         backgroundColor: data.color_fondo || "#1d40be",
         backgroundImage: `url(https://apipavin.mediaserviceagency.com/storage/${data.imagen})`,
@@ -216,7 +216,7 @@ export default function OrganigramaMap() {
       <div className="container-fluid">
         <div className="row">
           <div className="col position-relative" style={{ zIndex: 50 }}>
-            <div className="d-flex justify-content-center pt-50 pb-50">
+            <div className="d-block pt-50 pb-50">
               <Node node={data.subprocesos} />
             </div>
           </div>

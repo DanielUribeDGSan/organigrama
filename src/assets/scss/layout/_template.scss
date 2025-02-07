@@ -39,6 +39,10 @@
 /*---------------------------------
 	typography css start 
 ---------------------------------*/
+#root {
+  width: 100%;
+}
+
 body {
   background-color: var(--tp-common-background);
   font-family: sans-serif;
@@ -46,7 +50,7 @@ body {
   font-weight: 400;
   color: var(--tp-text-body);
   line-height: 25px;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 a {
