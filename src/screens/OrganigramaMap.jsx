@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Tree, TreeNode } from "react-organizational-chart";
+import Xarrow from "react-xarrows";
+import { ArcherContainer, ArcherElement } from "react-archer";
 import _ from "lodash";
 import "./OrganigramaMap.scss";
 import { Card } from "./Card";
@@ -33,78 +35,54 @@ const SecondaryConnection = ({ startNode, endNode }) => {
 
   useEffect(() => {
     const calculatePath = () => {
-      // Usar setTimeout para asegurar que los elementos están renderizados
-      setTimeout(() => {
-        const startElement = document.querySelector(
-          `[data-node-id="${startNode.id}"]`
-        );
-        const endElement = document.querySelector(
-          `[data-node-id="${endNode.id}"]`
-        );
-        const container = document.querySelector(".container-map");
+      const startElement = document.querySelector(
+        `[data-node-id="${startNode.id}"]`
+      );
+      const endElement = document.querySelector(
+        `[data-node-id="${endNode.id}"]`
+      );
 
-        if (startElement && endElement && container) {
-          const containerRect = container.getBoundingClientRect();
-          const startRect = startElement.getBoundingClientRect();
-          const endRect = endElement.getBoundingClientRect();
+      if (startElement && endElement) {
+        const startRect = startElement.getBoundingClientRect();
+        const endRect = endElement.getBoundingClientRect();
+        const containerRect = document
+          .querySelector(".container-map")
+          .getBoundingClientRect();
 
-          // Ajustar las coordenadas relativas al scroll
-          const startX =
-            startRect.left +
-            startRect.width / 2 +
-            window.scrollX -
-            containerRect.left;
-          const startY =
-            startRect.top +
-            startRect.height / 2 +
-            window.scrollY -
-            containerRect.top;
-          const endX =
-            endRect.left +
-            endRect.width / 2 +
-            window.scrollX -
-            containerRect.left;
-          const endY =
-            endRect.top +
-            endRect.height / 2 +
-            window.scrollY -
-            containerRect.top;
+        // Calculate positions relative to container
+        const startX =
+          startRect.left + startRect.width / 2 - containerRect.left;
+        const startY = startRect.top + startRect.height / 2 - containerRect.top;
+        const endX = endRect.left + endRect.width / 2 - containerRect.left;
+        const endY = endRect.top + endRect.height / 2 - containerRect.top;
 
-          // Calcular puntos de control para la curva
-          const deltaX = Math.abs(endX - startX);
-          const controlPointOffset = deltaX * 0.5;
+        // Create curved path
+        const path = `M ${startX} ${startY} 
+                     C ${startX} ${(startY + endY) / 2},
+                       ${endX} ${(startY + endY) / 2},
+                       ${endX} ${endY}`;
 
-          const path = `M ${startX},${startY} 
-                       C ${startX + controlPointOffset},${startY} 
-                         ${endX - controlPointOffset},${endY} 
-                         ${endX},${endY}`;
-
-          setPath(path);
-        }
-      }, 100);
+        setPath(path);
+      }
     };
 
+    // Initial calculation
     calculatePath();
 
-    // Recalcular en scroll y resize
+    // Recalculate on window resize
     window.addEventListener("resize", calculatePath);
-    window.addEventListener("scroll", calculatePath);
-
-    return () => {
-      window.removeEventListener("resize", calculatePath);
-      window.removeEventListener("scroll", calculatePath);
-    };
+    return () => window.removeEventListener("resize", calculatePath);
   }, [startNode.id, endNode.id]);
 
   return (
     <svg
       className="secondary-connection"
       style={{
-        position: "fixed", // Cambiar a fixed
+        position: "absolute",
         top: 0,
         left: 0,
-        width: "100vw", // Usar viewport width
-        height: "100vh", // Usar viewport height
+        width: "100%",
+        height: "100%",
         pointerEvents: "none",
         zIndex: 40,
       }}
@@ -112,7 +90,7 @@ const SecondaryConnection = ({ startNode, endNode }) => {
       <path
         d={path}
         stroke="#f4b042"
-        strokeWidth="3"
+        strokeWidth="2"
         fill="none"
         strokeDasharray="5,5"
       />
@@ -149,7 +127,6 @@ function Node({ node, parent, allNodes }) {
   const [collapsed, setCollapsed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState("");
-  console.log("node", node);
 
   const secondaryTarget = node.parent_second_id
     ? allNodes.find((n) => n.id === node.parent_second_id)
@@ -183,17 +160,46 @@ function Node({ node, parent, allNodes }) {
     <>
       <T
         label={
-          <div className="position-relative" data-node-id={node.id}>
-            <Card
-              node={node}
-              onModalOpen={handleModalOpen}
-              onCollapse={handleCollapse}
-              hasChildren={node?.children?.length > 0}
-              collapsed={collapsed}
-            />
-            {secondaryTarget && (
-              <SecondaryConnection startNode={node} endNode={secondaryTarget} />
-            )}
+          <div style={{ position: "relative" }}>
+            <ArcherElement
+              id={`node-${node.id}`}
+              relations={
+                secondaryTarget
+                  ? [
+                      {
+                        targetId: `node-${secondaryTarget.id}`,
+                        targetAnchor: "left",
+                        sourceAnchor: "right",
+                        style: {
+                          strokeDasharray: "5,5",
+                          stroke: "#f4b042",
+                          strokeWidth: 2,
+                        },
+                        label: null,
+                        className: "custom-arrow",
+                        offset: 0,
+                      },
+                    ]
+                  : []
+              }
+            >
+              <div
+                className="position-relative"
+                data-node-id={node.id}
+                style={{
+                  display: "inline-block",
+                  minWidth: "150px",
+                }}
+              >
+                <Card
+                  node={node}
+                  onModalOpen={handleModalOpen}
+                  onCollapse={handleCollapse}
+                  hasChildren={node?.children?.length > 0}
+                  collapsed={collapsed}
+                />
+              </div>
+            </ArcherElement>
           </div>
         }
       >
@@ -332,10 +338,24 @@ export default function OrganigramaMap() {
         <div className="row">
           <div className="col position-relative" style={{ zIndex: 50 }}>
             <div className="d-block pt-50 pb-50">
-              <Node
-                node={data.subprocesos}
-                allNodes={flattenNodes(data.subprocesos)}
-              />
+              <ArcherContainer
+                strokeColor="#f4b042"
+                noCurves={false}
+                offset={0}
+                style={{
+                  height: "100%",
+                  width: "100%",
+                }}
+                svgContainerStyle={{
+                  overflow: "visible",
+                  position: "absolute",
+                }}
+              >
+                <Node
+                  node={data.subprocesos}
+                  allNodes={flattenNodes(data.subprocesos)}
+                />
+              </ArcherContainer>
             </div>
           </div>
         </div>

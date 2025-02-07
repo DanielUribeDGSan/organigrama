@@ -6,6 +6,11 @@
   max-width: 100vw;
   max-height: 100vh;
   overflow: auto;
+  [data-node-id] {
+    min-width: 100px; // Asegura un ancho mínimo
+    min-height: 50px; // Asegura un alto mínimo
+    margin: 10px; // Espacio entre nodos
+  }
 
   p {
     font-size: 30px;
@@ -47,4 +52,7 @@
 
 .content-modal {
   font-family: "Roboto", sans-serif !important;
+}
+.secondary-connection {
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.1));
 }
