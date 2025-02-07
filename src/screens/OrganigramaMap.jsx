@@ -128,8 +128,13 @@ function Node({ node, parent, allNodes }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState("");
 
+  // Encontrar ambos targets secundarios y terciarios
   const secondaryTarget = node.parent_second_id
     ? allNodes.find((n) => n.id === node.parent_second_id)
+    : null;
+
+  const thirdTarget = node.parent_third_id
+    ? allNodes.find((n) => n.id === node.parent_third_id)
     : null;
 
   const handleCollapse = (e) => {
@@ -140,6 +145,47 @@ function Node({ node, parent, allNodes }) {
   const handleModalOpen = (content) => {
     setModalContent(content);
     setIsModalOpen(true);
+  };
+
+  // Crear el array de relaciones combinando ambas conexiones
+  const getRelations = () => {
+    const relations = [];
+
+    if (secondaryTarget) {
+      relations.push({
+        targetId: `node-${secondaryTarget.id}`,
+        targetAnchor: "left",
+        sourceAnchor: "right",
+        style: {
+          stroke: "#bbc",
+          strokeWidth: 2,
+          endMarker: false,
+          startMarker: true,
+        },
+        label: null,
+        className: "custom-arrow",
+        offset: 0,
+      });
+    }
+
+    if (thirdTarget) {
+      relations.push({
+        targetId: `node-${thirdTarget.id}`,
+        targetAnchor: "left",
+        sourceAnchor: "right",
+        style: {
+          stroke: "#bbc",
+          strokeWidth: 2,
+          endMarker: false,
+          startMarker: true,
+        },
+        label: null,
+        className: "custom-arrow",
+        offset: 0,
+      });
+    }
+
+    return relations;
   };
 
   const T = parent
@@ -161,30 +207,7 @@ function Node({ node, parent, allNodes }) {
       <T
         label={
           <div style={{ position: "relative" }}>
-            <ArcherElement
-              id={`node-${node.id}`}
-              relations={
-                secondaryTarget
-                  ? [
-                      {
-                        targetId: `node-${secondaryTarget.id}`,
-                        targetAnchor: "left",
-                        sourceAnchor: "right",
-                        style: {
-                          // strokeDasharray: "5,5",
-                          stroke: "#bbc",
-                          strokeWidth: 2,
-                          endMarker: false,
-                          startMarker: true,
-                        },
-                        label: null,
-                        className: "custom-arrow",
-                        offset: 0,
-                      },
-                    ]
-                  : []
-              }
-            >
+            <ArcherElement id={`node-${node.id}`} relations={getRelations()}>
               <div
                 className="position-relative"
                 data-node-id={node.id}
