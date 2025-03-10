@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import bootstrapBundleMin from "bootstrap/dist/js/bootstrap.bundle.min";
+import { replace } from "lodash";
 
 // Card component for nodes
 export const Card = ({
@@ -26,6 +27,8 @@ export const Card = ({
       case 2:
         // Image with PDF link
         if (node?.imagen) {
+          console.log("node?.url_archivo", node);
+
           return (
             <a
               href={node?.url_archivo}
@@ -33,10 +36,13 @@ export const Card = ({
               rel="noopener noreferrer"
               className="d-block"
               onClick={(e) => e.stopPropagation()}
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title={node?.tooltip ?? node?.url_archivo}
             >
               <img
-                src={`https://apipavin.mediaserviceagency.com/storage/${node?.imagen}`}
-                alt={node?.nombre || "Node image"}
+                src={`https://apipavin.capitaldevs.com/storage/${node?.imagen}`}
+                alt={node?.imagen || "Node image"}
                 className="img-fluid mx-auto d-block"
                 style={{ width: "96px", height: "96px", objectFit: "contain" }}
               />
@@ -79,7 +85,13 @@ export const Card = ({
 
       default:
         // Regular node
-        return <div className="p-3 text-center">{node?.nombre}</div>;
+
+        return (
+          <div
+            className="p-3 text-center"
+            dangerouslySetInnerHTML={{ __html: node?.nombre }}
+          />
+        );
     }
   };
 

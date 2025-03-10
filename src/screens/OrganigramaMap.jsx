@@ -103,11 +103,11 @@ const DecorativeImage = ({ src, index, positions = defaultPositions }) => {
 
   return (
     <img
-      src={`https://apipavin.mediaserviceagency.com/storage/${src}`}
+      src={`https://apipavin.capitaldevs.com/storage/${src}`}
       alt="decorative"
       className="decorative-image floating-animation"
       style={{
-        position: "absolute",
+        position: "fixed",
         ...position,
         width: "120px",
         height: "auto",
@@ -267,7 +267,7 @@ export default function OrganigramaMap() {
     { top: "55%", left: "2%" },
     { top: "65%", left: "15%" },
     { top: "75%", left: "1%" },
-    { top: "80%", left: "40%" },
+    { top: "71%%", left: "40%" },
 
     { top: "2%", left: "62%" },
     { top: "5%", left: "92%" },
@@ -287,7 +287,7 @@ export default function OrganigramaMap() {
       try {
         // Fetch subprocesos data
         const subprocesosResponse = await fetch(
-          `https://apipavin.mediaserviceagency.com/api/sub-procesos/${slug}`
+          `https://apipavin.capitaldevs.com/api/sub-procesos/${slug}`
         );
         if (!subprocesosResponse.ok) {
           throw new Error(`HTTP error! status: ${subprocesosResponse.status}`);
@@ -296,7 +296,7 @@ export default function OrganigramaMap() {
 
         // Fetch enlaces data
         const enlacesResponse = await fetch(
-          `https://apipavin.mediaserviceagency.com/api/enlaces/${slug}`
+          `https://apipavin.capitaldevs.com/api/enlaces/${slug}`
         );
         if (!enlacesResponse.ok) {
           throw new Error(`HTTP error! status: ${enlacesResponse.status}`);
@@ -333,14 +333,13 @@ export default function OrganigramaMap() {
   if (!data) {
     return <div className="p-3">No data available</div>;
   }
-  console.log("enlacesData", enlacesData);
 
   return (
     <div
       className="container-map position-relative w-100"
       style={{
         backgroundColor: data.color_fondo || "#1d40be",
-        backgroundImage: `url(https://apipavin.mediaserviceagency.com/storage/${data.imagen})`,
+        backgroundImage: `url(https://apipavin.capitaldevs.com/storage/${data.imagen})`,
         backgroundSize: "cover",
       }}
     >

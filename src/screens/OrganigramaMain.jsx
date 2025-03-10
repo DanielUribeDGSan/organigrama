@@ -12,10 +12,6 @@ export const OrganigramaMain = () => {
   const [hoverCircle5, setHoverCircle5] = useState(false);
   const [hoverCircle6, setHoverCircle6] = useState(false);
   const [hoverCircle7, setHoverCircle7] = useState(false);
-  const [hoverCircle8, setHoverCircle8] = useState(false);
-  const [hoverCircle9, setHoverCircle9] = useState(false);
-  const [hoverCircle10, setHoverCircle10] = useState(false);
-  const [hoverCircle11, setHoverCircle11] = useState(false);
 
   return (
     <section className={isLoading ? "" : "main-section"}>
@@ -35,7 +31,7 @@ export const OrganigramaMain = () => {
           onLoad={() => setIsLoading(false)}
         />
         <div className="images">
-          <Link to="/organigrama">
+          <Link to="/organigrama/local-disposition">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle1(true)}
@@ -49,21 +45,21 @@ export const OrganigramaMain = () => {
               onMouseLeave={() => setHoverCircle2(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/labelling">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle3(true)}
               onMouseLeave={() => setHoverCircle3(false)}
             />
           </Link>
-          <Link to="/organigrama/labelling">
+          <Link to="/organigrama">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle4(true)}
               onMouseLeave={() => setHoverCircle4(false)}
             />
           </Link>
-          <Link to="/organigrama/local-disposition">
+          <Link to="/organigrama">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle5(true)}
@@ -84,34 +80,7 @@ export const OrganigramaMain = () => {
               onMouseLeave={() => setHoverCircle7(false)}
             />
           </Link>
-          <Link to="/organigrama">
-            <div
-              className="hover-area"
-              onMouseEnter={() => setHoverCircle8(true)}
-              onMouseLeave={() => setHoverCircle8(false)}
-            />
-          </Link>
-          <Link to="/organigrama">
-            <div
-              className="hover-area"
-              onMouseEnter={() => setHoverCircle9(true)}
-              onMouseLeave={() => setHoverCircle9(false)}
-            />
-          </Link>
-          <Link to="/organigrama">
-            <div
-              className="hover-area"
-              onMouseEnter={() => setHoverCircle10(true)}
-              onMouseLeave={() => setHoverCircle10(false)}
-            />
-          </Link>
-          <Link to="/organigrama">
-            <div
-              className="hover-area"
-              onMouseEnter={() => setHoverCircle11(true)}
-              onMouseLeave={() => setHoverCircle11(false)}
-            />
-          </Link>
+
           {!isLoading && (
             <>
               <img
@@ -119,44 +88,29 @@ export const OrganigramaMain = () => {
                 className={`circle-1 ${hoverCircle1 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_6.png"
+                src="/assets/img/main/PTW_CIRCULOS_2.png"
                 className={`circle-2 ${hoverCircle2 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_11.png"
+                src="/assets/img/main/PTW_CIRCULOS_3.png"
                 className={`circle-3 ${hoverCircle3 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_3.png"
+                src="/assets/img/main/PTW_CIRCULOS_4.png"
                 className={`circle-4 ${hoverCircle4 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_2.png"
+                src="/assets/img/main/PTW_CIRCULOS_5.png"
                 className={`circle-5 ${hoverCircle5 ? "visible" : ""}`}
               />
               <img
-                src="/assets/img/main/PTW_CIRCULOS_9.png"
+                src="/assets/img/main/PTW_CIRCULOS_6.png"
                 className={`circle-6 ${hoverCircle6 ? "visible" : ""}`}
               />
+
               <img
                 src="/assets/img/main/PTW_CIRCULOS_7.png"
                 className={`circle-7 ${hoverCircle7 ? "visible" : ""}`}
-              />
-              <img
-                src="/assets/img/main/PTW_CIRCULOS_8.png"
-                className={`circle-8 ${hoverCircle8 ? "visible" : ""}`}
-              />
-              <img
-                src="/assets/img/main/PTW_CIRCULOS_4.png"
-                className={`circle-9 ${hoverCircle9 ? "visible" : ""}`}
-              />
-              <img
-                src="/assets/img/main/PTW_CIRCULOS_10.png"
-                className={`circle-10 ${hoverCircle10 ? "visible" : ""}`}
-              />
-              <img
-                src="/assets/img/main/PTW_CIRCULOS_5.png"
-                className={`circle-11 ${hoverCircle11 ? "visible" : ""}`}
               />
             </>
           )}

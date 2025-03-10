@@ -56,4 +56,4 @@ export const customPositions = [
   { top: "80%", left: "95%" },
 ];
 
-export const path = "https://apipavin.mediaserviceagency.com/storage/";
+export const path = "https://apipavin.capitaldevs.com/storage/";
