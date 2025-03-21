@@ -128,6 +128,8 @@ function Node({ node, parent, allNodes }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState("");
 
+  const nodeColor = node?.color || "#bbc";
+
   // Encontrar ambos targets secundarios y terciarios
   const secondaryTarget = node.parent_second_id
     ? allNodes.find((n) => n.id === node.parent_second_id)
@@ -157,7 +159,7 @@ function Node({ node, parent, allNodes }) {
         targetAnchor: "left",
         sourceAnchor: "right",
         style: {
-          stroke: "#bbc",
+          stroke: nodeColor,
           strokeWidth: 2,
           endMarker: false,
           startMarker: true,
@@ -174,7 +176,7 @@ function Node({ node, parent, allNodes }) {
         targetAnchor: "left",
         sourceAnchor: "right",
         style: {
-          stroke: "#bbc",
+          stroke: nodeColor,
           strokeWidth: 2,
           endMarker: false,
           startMarker: true,
@@ -194,7 +196,7 @@ function Node({ node, parent, allNodes }) {
         <Tree
           {...props}
           lineWidth="2px"
-          lineColor="#bbc"
+          lineColor={nodeColor}
           lineBorderRadius="12px"
           className="w-100 p-4"
         >
@@ -334,6 +336,8 @@ export default function OrganigramaMap() {
     return <div className="p-3">No data available</div>;
   }
 
+  const rootColor = data.subprocesos?.color || "#bbc";
+
   return (
     <div
       className="container-map position-relative w-100"
@@ -364,7 +368,7 @@ export default function OrganigramaMap() {
             <div className="col position-relative" style={{ zIndex: 50 }}>
               <div className="d-block pt-50 pb-50">
                 <ArcherContainer
-                  strokeColor="#bbc"
+                  strokeColor={rootColor}
                   noCurves={false}
                   offset={0}
                   style={{
