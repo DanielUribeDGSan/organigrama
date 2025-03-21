@@ -1,7 +1,8 @@
-import { useState } from "react";
-import "./OrganigramaMain.scss";
+import { useEffect, useState } from "react";
+import bootstrapBundleMin from "bootstrap/dist/js/bootstrap.bundle.min";
 import { Spinner } from "../components/spinners/Spinner";
 import { Link } from "react-router-dom";
+import "./OrganigramaMain.scss";
 
 export const OrganigramaMain = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,6 +13,17 @@ export const OrganigramaMain = () => {
   const [hoverCircle5, setHoverCircle5] = useState(false);
   const [hoverCircle6, setHoverCircle6] = useState(false);
   const [hoverCircle7, setHoverCircle7] = useState(false);
+
+  useEffect(() => {
+    // Initialize Bootstrap tooltips
+
+    const tooltipTriggerList = document.querySelectorAll(
+      '[data-bs-toggle="tooltip"]'
+    );
+    [...tooltipTriggerList].map(
+      (tooltipTriggerEl) => new bootstrapBundleMin.Tooltip(tooltipTriggerEl)
+    );
+  }, []);
 
   return (
     <section className={isLoading ? "" : "main-section"}>
@@ -30,6 +42,7 @@ export const OrganigramaMain = () => {
           src="/assets/img/main/main.png"
           onLoad={() => setIsLoading(false)}
         />
+        <div className=""></div>
         <div className="images">
           <Link to="/organigrama/local-disposition">
             <div
@@ -38,7 +51,7 @@ export const OrganigramaMain = () => {
               onMouseLeave={() => setHoverCircle1(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/creacion-cp">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle2(true)}
@@ -52,28 +65,28 @@ export const OrganigramaMain = () => {
               onMouseLeave={() => setHoverCircle3(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/armado-de-oissier">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle4(true)}
               onMouseLeave={() => setHoverCircle4(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/respuesta-de-autoridad-sanitaria">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle5(true)}
               onMouseLeave={() => setHoverCircle5(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/aprobacion-o-rechazo">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle6(true)}
               onMouseLeave={() => setHoverCircle6(false)}
             />
           </Link>
-          <Link to="/organigrama">
+          <Link to="/organigrama/actualizacion-de-artes-lift">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle7(true)}
@@ -114,6 +127,31 @@ export const OrganigramaMain = () => {
               />
             </>
           )}
+
+          <div
+            className="tooltip-1"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title={"IMPACTO EN LABELLING"}
+          />
+          <div
+            className="tooltip-2"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title={"SIN IMPACTO EN LABELLING"}
+          />
+          <div
+            className="tooltip-3"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title={"PREVENCIÓN"}
+          />
+          <div
+            className="tooltip-4"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title={"APROBACIÓN"}
+          />
         </div>
       </div>
     </section>

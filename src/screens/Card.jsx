@@ -27,8 +27,6 @@ export const Card = ({
       case 2:
         // Image with PDF link
         if (node?.imagen) {
-          console.log("node?.url_archivo", node);
-
           return (
             <a
               href={node?.url_archivo}

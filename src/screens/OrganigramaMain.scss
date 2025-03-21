@@ -187,3 +187,39 @@ body {
 .decorative-image {
   will-change: transform;
 }
+
+.tooltip-1 {
+  position: absolute;
+  top: 14.6%;
+  left: 33%;
+  width: 4%;
+  height: 14%;
+  z-index: 9999;
+}
+
+.tooltip-2 {
+  position: absolute;
+  top: 34.6%;
+  left: 38.5%;
+  width: 24%;
+  height: 3%;
+  z-index: 9999;
+}
+
+.tooltip-3 {
+  position: absolute;
+  top: 58.6%;
+  left: 35.5%;
+  width: 28%;
+  height: 3%;
+  z-index: 9999;
+}
+
+.tooltip-4 {
+  position: absolute;
+  top: 68.6%;
+  left: 32.5%;
+  width: 34%;
+  height: 3%;
+  z-index: 9999;
+}
