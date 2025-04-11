@@ -53,7 +53,7 @@ export const Card = ({
         // Node with modal
         return (
           <div className="p-3 text-center">
-            {node?.nombre}
+            <div dangerouslySetInnerHTML={{ __html: node?.nombre }} />
             {node?.modal && (
               <button
                 onClick={(e) => {
@@ -77,7 +77,7 @@ export const Card = ({
             data-bs-placement="top"
             title={node?.tooltip || ""}
           >
-            {node?.nombre}
+            <div dangerouslySetInnerHTML={{ __html: node?.nombre }} />
           </div>
         );
 
