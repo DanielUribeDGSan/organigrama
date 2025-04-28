@@ -42,7 +42,7 @@ export const Card = ({
                 src={`https://apipavin.capitaldevs.com/storage/${node?.imagen}`}
                 alt={node?.imagen || "Node image"}
                 className="img-fluid mx-auto d-block"
-                style={{ width: "130px", height: "130px", objectFit: "contain" }}
+                style={{ width: `${node?.width}px`, height: `${node?.height}px`, objectFit: "contain" }}
               />
             </a>
           );
