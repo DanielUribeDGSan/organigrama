@@ -123,8 +123,10 @@ const DecorativeImage = ({ src, index, positions = defaultPositions }) => {
 
 // Card component for nodes
 
-function Node({ node, parent, allNodes }) {
-  const [collapsed, setCollapsed] = useState(false);
+function Node({ node, parent, allNodes, level = 0 }) {
+  // Inicializar el estado de colapso basado en el nivel
+  // Solo el nodo raíz (nivel 0) comenzará expandido
+  const [collapsed, setCollapsed] = useState(level > 0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState("");
 
@@ -237,6 +239,7 @@ function Node({ node, parent, allNodes }) {
               node={child}
               parent={node}
               allNodes={allNodes}
+              level={level + 1} // Incrementar el nivel para los hijos
             />
           ))}
       </T>
@@ -383,6 +386,7 @@ export default function OrganigramaMap() {
                   <Node
                     node={data.subprocesos}
                     allNodes={flattenNodes(data.subprocesos)}
+                    level={1}
                   />
                 </ArcherContainer>
               </div>
