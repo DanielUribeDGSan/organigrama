@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react/prop-types */
 import { useEffect } from "react";
 import bootstrapBundleMin from "bootstrap/dist/js/bootstrap.bundle.min";
-import { replace } from "lodash";
 
 // Card component for nodes
 export const Card = ({
@@ -42,7 +43,11 @@ export const Card = ({
                 src={`https://apipavin.capitaldevs.com/storage/${node?.imagen}`}
                 alt={node?.imagen || "Node image"}
                 className="img-fluid mx-auto d-block"
-                style={{ width: `${node?.width}px`, height: `${node?.height}px`, objectFit: "contain" }}
+                style={{
+                  width: `${node?.width}px`,
+                  height: `${node?.height}px`,
+                  objectFit: "contain",
+                }}
               />
             </a>
           );
