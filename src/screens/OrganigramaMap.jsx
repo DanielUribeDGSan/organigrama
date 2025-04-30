@@ -20,6 +20,8 @@ const defaultPositions = [
   { top: "95%", left: "90%" },
 ];
 
+let dataOrganigrama = {};
+
 const flattenNodes = (node) => {
   let nodes = [node];
   if (node.children) {
@@ -123,8 +125,14 @@ const DecorativeImage = ({ src, index, positions = defaultPositions }) => {
 
 // Card component for nodes
 
-function Node({ node, parent, allNodes }) {
-  const [collapsed, setCollapsed] = useState(false);
+function Node({ node, parent, allNodes, level }) {
+  // Inicializar el estado de colapso basado en el nivel y la configuración expandAll
+  // Si expandAll es true, ningún nodo estará colapsado inicialmente
+  // Si expandAll es false, solo el nodo raíz (nivel 0) comenzará expandido
+
+  const expandAll = dataOrganigrama?.expand === 1 ? true : false;
+
+  const [collapsed, setCollapsed] = useState(expandAll ? false : level > 0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState("");
 
@@ -237,6 +245,7 @@ function Node({ node, parent, allNodes }) {
               node={child}
               parent={node}
               allNodes={allNodes}
+              level={level + 1} // Incrementar el nivel para los hijos
             />
           ))}
       </T>
@@ -307,6 +316,7 @@ export default function OrganigramaMap() {
 
         // Update states based on responses
         if (subprocesosResult.res === true && subprocesosResult.subprocesos) {
+          dataOrganigrama = subprocesosResult.subprocesos;
           setData(subprocesosResult.subprocesos);
           setImagesData(subprocesosResult.imagenes);
         }
@@ -383,6 +393,7 @@ export default function OrganigramaMap() {
                   <Node
                     node={data.subprocesos}
                     allNodes={flattenNodes(data.subprocesos)}
+                    level={1}
                   />
                 </ArcherContainer>
               </div>
