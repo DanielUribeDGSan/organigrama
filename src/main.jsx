@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import OrganigramaApp from "./OrganigramaApp.jsx";
+import OrganigramaApp from "./OrganigramaApp";
 
 // import './styles/utils.scss';
 import "./styles/index.scss";
