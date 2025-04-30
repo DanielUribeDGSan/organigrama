@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { Tree, TreeNode } from "react-organizational-chart";
 import ScrollContainer from "react-indiana-drag-scroll";
@@ -350,7 +352,9 @@ export default function OrganigramaMap() {
 
   return (
     <div
-      className="container-map position-relative w-100"
+      className={`container-map position-relative w-100 ${
+        dataOrganigrama?.expand === 1 ? "hidden-ul" : "hidden-ul"
+      }`}
       style={{
         backgroundColor: data.color_fondo || "#1d40be",
         backgroundImage: `url(https://apipavin.capitaldevs.com/storage/${data.imagen})`,
