@@ -1,7 +1,7 @@
 import { ToastContainer } from "react-toastify";
 import AppRouter from "./routers/AppRouter";
 
-const OrganigramaApp = () => {
+const App = () => {
   return (
     <>
       <AppRouter />
@@ -10,4 +10,4 @@ const OrganigramaApp = () => {
   );
 };
 
-export default OrganigramaApp;
+export default App;
