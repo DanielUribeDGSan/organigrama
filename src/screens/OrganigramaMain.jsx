@@ -65,7 +65,7 @@ export const OrganigramaMain = () => {
               onMouseLeave={() => setHoverCircle3(false)}
             />
           </Link>
-          <Link to="/organigrama/armado-de-oissier">
+          <Link to="/organigrama/armado-de-doissier">
             <div
               className="hover-area"
               onMouseEnter={() => setHoverCircle4(true)}
