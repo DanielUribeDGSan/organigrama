@@ -130,20 +130,33 @@ const DecorativeImage = ({ src, index, positions = defaultPositions }) => {
 // Card component for nodes
 
 function Node({ node, parent, allNodes, level }) {
-  const { toggleNodeCollapse, isNodeCollapsed, collapseConnectedNode } =
-    useCollapse();
+  // Actualiza las destructuring en el componente Node
+
+  const {
+    toggleNodeCollapse,
+    isNodeCollapsed,
+    collapseConnectedNode,
+    isNodeControlling,
+    isNodeControlledBySpecialConnection,
+    handleNormalCollapse,
+  } = useCollapse();
 
   const expandAll = dataOrganigrama?.expand === 1 ? true : false;
 
   // Usar el estado global en lugar del estado local
-  const collapsed = isNodeCollapsed(node.id) || (!expandAll && level > 0);
+  // IMPORTANTE: Solo colapsar por defecto si expandAll es false Y tiene nivel > 0
+  const defaultCollapsed = !expandAll && level > 0;
+  const collapsed =
+    isNodeCollapsed(node.id) !== undefined
+      ? isNodeCollapsed(node.id)
+      : defaultCollapsed;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState("");
 
   const nodeColor = node?.color || "#bbc";
 
-  // Encontrar nodos conectados (que este nodo controla)
+  // Encontrar nodos conectados (que este nodo controla via parent_second_id/parent_third_id)
   const secondaryTarget = node.parent_second_id
     ? allNodes.find((n) => n.id === node.parent_second_id)
     : null;
@@ -152,8 +165,8 @@ function Node({ node, parent, allNodes, level }) {
     ? allNodes.find((n) => n.id === node.parent_third_id)
     : null;
 
-  // NUEVA LÓGICA: Encontrar nodos que ESTE nodo puede controlar
-  // (buscar nodos que tengan parent_second_id o parent_third_id apuntando a este nodo)
+  // LÓGICA CORREGIDA: Encontrar nodos que ESTE nodo puede controlar
+  // Buscar nodos que tengan parent_second_id o parent_third_id apuntando a este nodo
   const controlledNodes = allNodes.filter(
     (n) => n.parent_second_id === node.id || n.parent_third_id === node.id
   );
@@ -167,54 +180,148 @@ function Node({ node, parent, allNodes, level }) {
 
   console.log(`Node ${node.id} (${node.nombre}):`, {
     hasConnections,
+    hasChildren: node?.children?.length > 0,
     secondaryTarget: secondaryTarget?.id,
     thirdTarget: thirdTarget?.id,
     controlledNodes: controlledNodes.map((n) => ({
       id: n.id,
       nombre: n.nombre,
     })),
+    collapsed,
+    level,
   });
+
+  // Actualiza el handleCollapse en el componente Node
 
   const handleCollapse = (e) => {
     e.stopPropagation();
 
-    // Solo colapsar/expandir el nodo actual si tiene hijos
+    // LÓGICA MEJORADA: Separar completamente colapsos normales de conexiones especiales
+
+    // 1. Si tiene hijos, manejar colapso normal de jerarquía con la nueva función
     if (node?.children?.length > 0) {
-      toggleNodeCollapse(node.id, !collapsed);
+      console.log(`Toggling children of node ${node.id}: ${!collapsed}`);
+      handleNormalCollapse(node.id, !collapsed, allNodes);
     }
 
-    // Si este nodo tiene conexiones secundarias directas, controlar esos nodos
+    // 2. Si tiene conexiones directas (parent_second_id, parent_third_id), controlar esos nodos
     if (secondaryTarget) {
       console.log(
-        `Toggling connection from ${node.id} to ${secondaryTarget.id}`
+        `Toggling direct connection from ${node.id} to ${secondaryTarget.id}`
       );
-      collapseConnectedNode(node.id, secondaryTarget.id);
+      collapseConnectedNode(node.id, secondaryTarget.id, allNodes);
     }
 
     if (thirdTarget) {
-      console.log(`Toggling connection from ${node.id} to ${thirdTarget.id}`);
-      collapseConnectedNode(node.id, thirdTarget.id);
+      console.log(
+        `Toggling direct connection from ${node.id} to ${thirdTarget.id}`
+      );
+      collapseConnectedNode(node.id, thirdTarget.id, allNodes);
     }
 
-    // NUEVA LÓGICA: Controlar nodos que apuntan a este nodo
-    controlledNodes.forEach((controlledNode) => {
-      console.log(`Controlling node ${controlledNode.id} from ${node.id}`);
-      collapseConnectedNode(node.id, controlledNode.id);
+    // 3. Si controla otros nodos (nodos que apuntan a este), controlar esos nodos
+    // Esto es para casos como MCR que controla EVENT
+    if (controlledNodes.length > 0) {
+      controlledNodes.forEach((controlledNode) => {
+        console.log(`Controlling node ${controlledNode.id} from ${node.id}`);
+        collapseConnectedNode(node.id, controlledNode.id, allNodes);
+      });
+    }
+  };
+
+  // FUNCIÓN CORREGIDA: Verificar si este nodo está siendo controlado directamente por conexión especial
+  const isDirectlyControlledBySpecialConnection = () => {
+    // Este nodo está controlado si tiene parent_second_id o parent_third_id
+    // Y ese nodo controlador está en estado "controlling"
+    if (node.parent_second_id) {
+      const controller = allNodes.find((n) => n.id === node.parent_second_id);
+      if (controller && isNodeControlling(controller.id)) {
+        console.log(
+          `Node ${node.id} (${node.nombre}) is directly controlled by ${controller.id} (${controller.nombre}) via parent_second_id`
+        );
+        return true;
+      }
+    }
+
+    if (node.parent_third_id) {
+      const controller = allNodes.find((n) => n.id === node.parent_third_id);
+      if (controller && isNodeControlling(controller.id)) {
+        console.log(
+          `Node ${node.id} (${node.nombre}) is directly controlled by ${controller.id} (${controller.nombre}) via parent_third_id`
+        );
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  // FUNCIÓN MEJORADA: Verificar si algún ancestro está siendo controlado por conexión especial
+  const isAncestorControlledBySpecialConnection = () => {
+    // Función recursiva para encontrar todos los ancestros
+    const findAllAncestors = (currentNode, ancestors = []) => {
+      if (!currentNode || !currentNode.parent_id) return ancestors;
+
+      const parent = allNodes.find((n) => n.id === currentNode.parent_id);
+      if (parent) {
+        ancestors.push(parent);
+        return findAllAncestors(parent, ancestors);
+      }
+      return ancestors;
+    };
+
+    const ancestors = findAllAncestors(node);
+
+    // Verificar si algún ancestro está siendo controlado por conexión especial
+    return ancestors.some((ancestor) => {
+      // Verificar si el ancestro tiene parent_second_id o parent_third_id
+      if (ancestor.parent_second_id) {
+        const controller = allNodes.find(
+          (n) => n.id === ancestor.parent_second_id
+        );
+        if (controller && isNodeControlling(controller.id)) {
+          console.log(
+            `Node ${node.id} (${node.nombre}) is hidden because ancestor ${ancestor.id} (${ancestor.nombre}) is controlled by ${controller.id} (${controller.nombre}) via parent_second_id`
+          );
+          return true;
+        }
+      }
+
+      if (ancestor.parent_third_id) {
+        const controller = allNodes.find(
+          (n) => n.id === ancestor.parent_third_id
+        );
+        if (controller && isNodeControlling(controller.id)) {
+          console.log(
+            `Node ${node.id} (${node.nombre}) is hidden because ancestor ${ancestor.id} (${ancestor.nombre}) is controlled by ${controller.id} (${controller.nombre}) via parent_third_id`
+          );
+          return true;
+        }
+      }
+
+      return false;
     });
   };
 
-  // Verificar si este nodo está siendo controlado por otro nodo
-  const isControlledByOther = () => {
-    return allNodes.some(
-      (otherNode) =>
-        (otherNode.parent_second_id === node.id ||
-          otherNode.parent_third_id === node.id) &&
-        isNodeCollapsed(otherNode.id)
-    );
+  // Verificar si este nodo debe ocultarse por jerarquía normal (padre colapsado)
+  const isHiddenByParent = () => {
+    if (!parent) return false;
+    const isHidden = isNodeCollapsed(parent.id);
+
+    if (isHidden) {
+      console.log(
+        `Node ${node.id} (${node.nombre}) is hidden by parent ${parent.id} (${parent.nombre})`
+      );
+    }
+
+    return isHidden;
   };
 
-  // Si este nodo está siendo controlado por otro y ese otro está colapsado, ocultar este nodo
-  const shouldHideNode = isControlledByOther();
+  // Combinar todas las condiciones - LÓGICA ACTUALIZADA
+  const shouldHideNode =
+    isHiddenByParent() ||
+    isDirectlyControlledBySpecialConnection() ||
+    isAncestorControlledBySpecialConnection();
 
   const handleModalOpen = (content) => {
     setModalContent(content);
@@ -261,10 +368,12 @@ function Node({ node, parent, allNodes, level }) {
     return relations;
   };
 
-  // No renderizar el nodo si está siendo controlado por otro nodo colapsado
+  // No renderizar el nodo si debe ocultarse
   if (shouldHideNode) {
     console.log(
-      `Node ${node.id} is hidden because it's controlled by another node`
+      `Node ${node.id} (${
+        node.nombre
+      }) is hidden - hiddenByParent: ${isHiddenByParent()}, directlyControlled: ${isDirectlyControlledBySpecialConnection()}, ancestorControlled: ${isAncestorControlledBySpecialConnection()}`
     );
     return null;
   }
@@ -302,7 +411,7 @@ function Node({ node, parent, allNodes, level }) {
                   onModalOpen={handleModalOpen}
                   onCollapse={handleCollapse}
                   hasChildren={node?.children?.length > 0}
-                  hasConnections={hasConnections} // Pasar información de conexiones
+                  hasConnections={hasConnections}
                   collapsed={collapsed}
                 />
               </div>
@@ -330,6 +439,7 @@ function Node({ node, parent, allNodes, level }) {
     </>
   );
 }
+
 export default function OrganigramaMap() {
   const [data, setData] = useState([]);
   const [enlacesData, setEnlacesData] = useState([]);
