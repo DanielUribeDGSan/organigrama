@@ -151,16 +151,16 @@ export const Card = ({
       {/* Indicador visual para nodos con conexiones pero sin hijos */}
       {!hasChildren && hasConnections && (
         <div
-          className="position-absolute start-50 translate-middle-x"
+          className="position-absolute top-50 translate-middle-y"
           style={{
-            bottom: "-24px",
-            transform: "translateX(-50%)",
-            fontSize: "14px",
+            left: "-20px", // Posición a la izquierda del nodo
+            transform: "translateY(-50%)", // Centrar verticalmente
+            fontSize: "24px",
             color: node?.color,
             fontWeight: "bold",
           }}
         >
-          ▼
+          ◄
         </div>
       )}
     </div>
