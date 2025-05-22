@@ -10,6 +10,8 @@ import { Card } from "./Card";
 import { useParams } from "react-router-dom";
 import { CustomModal } from "../components/modal/CustomModal";
 import { CustomizedMenus } from "../components/menu/MenuTop";
+import { useCollapse } from "./hooks/useCollapse";
+import { CollapseProvider } from "./context/CollapseProvider";
 
 const defaultPositions = [
   { top: "5%", left: "10%" },
@@ -128,19 +130,20 @@ const DecorativeImage = ({ src, index, positions = defaultPositions }) => {
 // Card component for nodes
 
 function Node({ node, parent, allNodes, level }) {
-  // Inicializar el estado de colapso basado en el nivel y la configuración expandAll
-  // Si expandAll es true, ningún nodo estará colapsado inicialmente
-  // Si expandAll es false, solo el nodo raíz (nivel 0) comenzará expandido
+  const { toggleNodeCollapse, isNodeCollapsed, collapseConnectedNode } =
+    useCollapse();
 
   const expandAll = dataOrganigrama?.expand === 1 ? true : false;
 
-  const [collapsed, setCollapsed] = useState(expandAll ? false : level > 0);
+  // Usar el estado global en lugar del estado local
+  const collapsed = isNodeCollapsed(node.id) || (!expandAll && level > 0);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState("");
 
   const nodeColor = node?.color || "#bbc";
 
-  // Encontrar ambos targets secundarios y terciarios
+  // Encontrar nodos conectados (que este nodo controla)
   const secondaryTarget = node.parent_second_id
     ? allNodes.find((n) => n.id === node.parent_second_id)
     : null;
@@ -149,21 +152,79 @@ function Node({ node, parent, allNodes, level }) {
     ? allNodes.find((n) => n.id === node.parent_third_id)
     : null;
 
+  // NUEVA LÓGICA: Encontrar nodos que ESTE nodo puede controlar
+  // (buscar nodos que tengan parent_second_id o parent_third_id apuntando a este nodo)
+  const controlledNodes = allNodes.filter(
+    (n) => n.parent_second_id === node.id || n.parent_third_id === node.id
+  );
+
+  // Verificar si este nodo tiene conexiones (para hacer clickeable el Card)
+  const hasConnections = !!(
+    secondaryTarget ||
+    thirdTarget ||
+    controlledNodes.length > 0
+  );
+
+  console.log(`Node ${node.id} (${node.nombre}):`, {
+    hasConnections,
+    secondaryTarget: secondaryTarget?.id,
+    thirdTarget: thirdTarget?.id,
+    controlledNodes: controlledNodes.map((n) => ({
+      id: n.id,
+      nombre: n.nombre,
+    })),
+  });
+
   const handleCollapse = (e) => {
     e.stopPropagation();
-    setCollapsed(!collapsed);
+
+    // Solo colapsar/expandir el nodo actual si tiene hijos
+    if (node?.children?.length > 0) {
+      toggleNodeCollapse(node.id, !collapsed);
+    }
+
+    // Si este nodo tiene conexiones secundarias directas, controlar esos nodos
+    if (secondaryTarget) {
+      console.log(
+        `Toggling connection from ${node.id} to ${secondaryTarget.id}`
+      );
+      collapseConnectedNode(node.id, secondaryTarget.id);
+    }
+
+    if (thirdTarget) {
+      console.log(`Toggling connection from ${node.id} to ${thirdTarget.id}`);
+      collapseConnectedNode(node.id, thirdTarget.id);
+    }
+
+    // NUEVA LÓGICA: Controlar nodos que apuntan a este nodo
+    controlledNodes.forEach((controlledNode) => {
+      console.log(`Controlling node ${controlledNode.id} from ${node.id}`);
+      collapseConnectedNode(node.id, controlledNode.id);
+    });
   };
+
+  // Verificar si este nodo está siendo controlado por otro nodo
+  const isControlledByOther = () => {
+    return allNodes.some(
+      (otherNode) =>
+        (otherNode.parent_second_id === node.id ||
+          otherNode.parent_third_id === node.id) &&
+        isNodeCollapsed(otherNode.id)
+    );
+  };
+
+  // Si este nodo está siendo controlado por otro y ese otro está colapsado, ocultar este nodo
+  const shouldHideNode = isControlledByOther();
 
   const handleModalOpen = (content) => {
     setModalContent(content);
     setIsModalOpen(true);
   };
 
-  // Crear el array de relaciones combinando ambas conexiones
   const getRelations = () => {
     const relations = [];
 
-    if (secondaryTarget) {
+    if (secondaryTarget && !shouldHideNode) {
       relations.push({
         targetId: `node-${secondaryTarget.id}`,
         targetAnchor: "left",
@@ -180,7 +241,7 @@ function Node({ node, parent, allNodes, level }) {
       });
     }
 
-    if (thirdTarget) {
+    if (thirdTarget && !shouldHideNode) {
       relations.push({
         targetId: `node-${thirdTarget.id}`,
         targetAnchor: "left",
@@ -199,6 +260,14 @@ function Node({ node, parent, allNodes, level }) {
 
     return relations;
   };
+
+  // No renderizar el nodo si está siendo controlado por otro nodo colapsado
+  if (shouldHideNode) {
+    console.log(
+      `Node ${node.id} is hidden because it's controlled by another node`
+    );
+    return null;
+  }
 
   const T = parent
     ? TreeNode
@@ -233,6 +302,7 @@ function Node({ node, parent, allNodes, level }) {
                   onModalOpen={handleModalOpen}
                   onCollapse={handleCollapse}
                   hasChildren={node?.children?.length > 0}
+                  hasConnections={hasConnections} // Pasar información de conexiones
                   collapsed={collapsed}
                 />
               </div>
@@ -247,7 +317,7 @@ function Node({ node, parent, allNodes, level }) {
               node={child}
               parent={node}
               allNodes={allNodes}
-              level={level + 1} // Incrementar el nivel para los hijos
+              level={level + 1}
             />
           ))}
       </T>
@@ -260,7 +330,6 @@ function Node({ node, parent, allNodes, level }) {
     </>
   );
 }
-
 export default function OrganigramaMap() {
   const [data, setData] = useState([]);
   const [enlacesData, setEnlacesData] = useState([]);
@@ -361,50 +430,52 @@ export default function OrganigramaMap() {
         backgroundSize: "cover",
       }}
     >
-      <ScrollContainer className="scroll-container" hideScrollbars={false}>
-        <CustomizedMenus options={enlacesData} />
-        <div
-          className="position-absolute w-100 h-100"
-          style={{ pointerEvents: "none" }}
-        >
-          {decorativeImages.map((imagen, index) => (
-            <DecorativeImage
-              key={index}
-              src={imagen}
-              index={index}
-              positions={customPositions} // Pasamos las posiciones personalizadas
-            />
-          ))}
-        </div>
+      <CollapseProvider>
+        <ScrollContainer className="scroll-container" hideScrollbars={false}>
+          <CustomizedMenus options={enlacesData} />
+          <div
+            className="position-absolute w-100 h-100"
+            style={{ pointerEvents: "none" }}
+          >
+            {decorativeImages.map((imagen, index) => (
+              <DecorativeImage
+                key={index}
+                src={imagen}
+                index={index}
+                positions={customPositions} // Pasamos las posiciones personalizadas
+              />
+            ))}
+          </div>
 
-        <div className="container-fluid">
-          <div className="row">
-            <div className="col position-relative" style={{ zIndex: 50 }}>
-              <div className="d-block pt-50 pb-50">
-                <ArcherContainer
-                  strokeColor={rootColor}
-                  noCurves={false}
-                  offset={0}
-                  style={{
-                    height: "100%",
-                    width: "100%",
-                  }}
-                  svgContainerStyle={{
-                    overflow: "visible",
-                    position: "absolute",
-                  }}
-                >
-                  <Node
-                    node={data.subprocesos}
-                    allNodes={flattenNodes(data.subprocesos)}
-                    level={1}
-                  />
-                </ArcherContainer>
+          <div className="container-fluid">
+            <div className="row">
+              <div className="col position-relative" style={{ zIndex: 50 }}>
+                <div className="d-block pt-50 pb-50">
+                  <ArcherContainer
+                    strokeColor={rootColor}
+                    noCurves={false}
+                    offset={0}
+                    style={{
+                      height: "100%",
+                      width: "100%",
+                    }}
+                    svgContainerStyle={{
+                      overflow: "visible",
+                      position: "absolute",
+                    }}
+                  >
+                    <Node
+                      node={data.subprocesos}
+                      allNodes={flattenNodes(data.subprocesos)}
+                      level={1}
+                    />
+                  </ArcherContainer>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </ScrollContainer>
+        </ScrollContainer>
+      </CollapseProvider>
     </div>
   );
 }

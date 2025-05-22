@@ -10,6 +10,7 @@ export const Card = ({
   onCollapse,
   hasChildren,
   collapsed,
+  hasConnections = false, // Nueva prop para indicar si tiene conexiones
 }) => {
   useEffect(() => {
     // Initialize Bootstrap tooltips
@@ -94,7 +95,6 @@ export const Card = ({
 
       default:
         // Regular node
-
         return (
           <div
             className="p-3 text-center"
@@ -105,13 +105,16 @@ export const Card = ({
     }
   };
 
+  // Determinar si el nodo debe ser clickeable
+  const isClickable = hasChildren || hasConnections;
+
   const style = {
     backgroundColor: node?.color || "transparent",
     color: node?.color_texto || "#000000",
     border: node?.tipo_sub_proceso_id === 4 ? "2px solid" : "none",
     borderRadius: "8px",
     marginBottom: "5px",
-    cursor: hasChildren ? "pointer" : "default",
+    cursor: isClickable ? "pointer" : "default", // Cambiar cursor si es clickeable
     display: "inline-block",
     position: "relative",
     zIndex: 50,
@@ -120,7 +123,7 @@ export const Card = ({
     transition: "all 0.2s ease",
   };
 
-  if (hasChildren) {
+  if (isClickable) {
     style.hover = {
       opacity: 0.9,
     };
@@ -130,7 +133,7 @@ export const Card = ({
     <div
       className="node-card"
       style={style}
-      onClick={hasChildren ? onCollapse : undefined}
+      onClick={isClickable ? onCollapse : undefined} // Hacer clickeable si tiene hijos o conexiones
     >
       {getNodeContent()}
       {hasChildren && (
@@ -145,8 +148,21 @@ export const Card = ({
           ▼
         </div>
       )}
+      {/* Indicador visual para nodos con conexiones pero sin hijos */}
+      {!hasChildren && hasConnections && (
+        <div
+          className="position-absolute start-50 translate-middle-x"
+          style={{
+            bottom: "-24px",
+            transform: "translateX(-50%)",
+            fontSize: "14px",
+            color: node?.color,
+            fontWeight: "bold",
+          }}
+        >
+          ▼
+        </div>
+      )}
     </div>
   );
 };
-
-// Rest of the components remain the same...
