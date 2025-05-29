@@ -36,8 +36,8 @@ export const CollapseProvider = ({ children }) => {
 
     // Función recursiva para procesar nodos y asignar levels
     const processNode = (node, level = 1) => {
-      // NUEVA LÓGICA: Si expand es 0, mostrar hasta level 2, si es 1 mostrar todos
-      const shouldCollapse = !expandAll && level > 2; // Cambio: level > 2 en lugar de level > 1
+      // LÓGICA CORREGIDA: Si expand es 0, solo mostrar nivel 1 (root), si es 1 mostrar todos
+      const shouldCollapse = !expandAll && level > 1; // Solo mostrar root cuando expand = 0
 
       if (shouldCollapse) {
         console.log(
@@ -82,7 +82,7 @@ export const CollapseProvider = ({ children }) => {
       // Procesar todos los nodos planos para encontrar sus niveles correctos
       flatNodes.forEach((node) => {
         const level = calculateNodeLevel(node, allNodes);
-        const shouldCollapse = !expandAll && level > 2; // Cambio: level > 2
+        const shouldCollapse = !expandAll && level > 1; // Solo mostrar root cuando expand = 0
         initialCollapsedState.set(node.id, shouldCollapse);
       });
     }
