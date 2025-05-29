@@ -129,15 +129,17 @@ const DecorativeImage = ({ src, index, positions = defaultPositions }) => {
 
 // Card component for nodes
 
-function Node({ node, parent, allNodes, level }) {
-  // Actualiza las destructuring en el componente Node
+// Actualizar la función Node en OrganigramaMap.jsx
+// Reemplazar desde la línea donde empieza "function Node({" hasta antes de "export default function OrganigramaMap()"
 
+function Node({ node, parent, allNodes, level }) {
   const {
     toggleNodeCollapse,
     isNodeCollapsed,
     collapseConnectedNode,
     isNodeControlling,
     isNodeControlledBySpecialConnection,
+    isNodeShownBySpecialConnection,
     handleNormalCollapse,
   } = useCollapse();
 
@@ -192,7 +194,6 @@ function Node({ node, parent, allNodes, level }) {
   });
 
   // Actualiza el handleCollapse en el componente Node
-
   const handleCollapse = (e) => {
     e.stopPropagation();
 
@@ -231,6 +232,14 @@ function Node({ node, parent, allNodes, level }) {
 
   // FUNCIÓN CORREGIDA: Verificar si este nodo está siendo controlado directamente por conexión especial
   const isDirectlyControlledBySpecialConnection = () => {
+    // Primero verificar si el nodo está siendo mostrado explícitamente por una conexión especial
+    if (isNodeShownBySpecialConnection(node.id)) {
+      console.log(
+        `Node ${node.id} (${node.nombre}) is being shown by special connection`
+      );
+      return false; // No está controlado, está siendo mostrado
+    }
+
     // Este nodo está controlado si tiene parent_second_id o parent_third_id
     // Y ese nodo controlador está en estado "controlling"
     if (node.parent_second_id) {
@@ -258,6 +267,11 @@ function Node({ node, parent, allNodes, level }) {
 
   // FUNCIÓN MEJORADA: Verificar si algún ancestro está siendo controlado por conexión especial
   const isAncestorControlledBySpecialConnection = () => {
+    // Si el nodo está siendo mostrado por conexión especial, no verificar ancestros
+    if (isNodeShownBySpecialConnection(node.id)) {
+      return false;
+    }
+
     // Función recursiva para encontrar todos los ancestros
     const findAllAncestors = (currentNode, ancestors = []) => {
       if (!currentNode || !currentNode.parent_id) return ancestors;
@@ -274,6 +288,11 @@ function Node({ node, parent, allNodes, level }) {
 
     // Verificar si algún ancestro está siendo controlado por conexión especial
     return ancestors.some((ancestor) => {
+      // Si el ancestro está siendo mostrado por conexión especial, no está controlado
+      if (isNodeShownBySpecialConnection(ancestor.id)) {
+        return false;
+      }
+
       // Verificar si el ancestro tiene parent_second_id o parent_third_id
       if (ancestor.parent_second_id) {
         const controller = allNodes.find(
@@ -305,6 +324,11 @@ function Node({ node, parent, allNodes, level }) {
 
   // Verificar si este nodo debe ocultarse por jerarquía normal (padre colapsado)
   const isHiddenByParent = () => {
+    // Si el nodo está siendo mostrado por conexión especial, ignorar el colapso del padre
+    if (isNodeShownBySpecialConnection(node.id)) {
+      return false;
+    }
+
     if (!parent) return false;
     const isHidden = isNodeCollapsed(parent.id);
 
