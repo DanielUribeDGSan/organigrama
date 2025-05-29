@@ -9,6 +9,8 @@ export const CollapseProvider = ({ children }) => {
   const [controllingNodes, setControllingNodes] = useState(new Map());
   // Estado para rastrear conexiones especiales activas (qué nodo controla a cuál)
   const [specialConnections, setSpecialConnections] = useState(new Map());
+  // Estado para rastrear si ya se inicializó
+  const [initialized, setInitialized] = useState(false);
 
   const toggleNodeCollapse = (nodeId, isCollapsed) => {
     console.log(`Setting node ${nodeId} to collapsed: ${isCollapsed}`);
@@ -22,6 +24,97 @@ export const CollapseProvider = ({ children }) => {
   const isNodeCollapsed = (nodeId) => {
     // Si el nodo no está en el mapa, NO está colapsado por defecto
     return collapsedNodes.has(nodeId) ? collapsedNodes.get(nodeId) : false;
+  };
+
+  // Nueva función para inicializar el estado según expand
+  const initializeNodesState = (allNodes, expandAll) => {
+    if (initialized || !allNodes || allNodes.length === 0) return;
+
+    console.log(`Initializing nodes state with expandAll: ${expandAll}`);
+
+    const initialCollapsedState = new Map();
+
+    // Función recursiva para procesar nodos y asignar levels
+    const processNode = (node, level = 1) => {
+      // NUEVA LÓGICA: Si expand es 0, mostrar hasta level 2, si es 1 mostrar todos
+      const shouldCollapse = !expandAll && level > 2; // Cambio: level > 2 en lugar de level > 1
+
+      if (shouldCollapse) {
+        console.log(
+          `Initializing node ${node.id} (${
+            node.nombre || "null"
+          }) at level ${level} as collapsed`
+        );
+        initialCollapsedState.set(node.id, true);
+      } else {
+        console.log(
+          `Initializing node ${node.id} (${
+            node.nombre || "null"
+          }) at level ${level} as expanded`
+        );
+        initialCollapsedState.set(node.id, false);
+      }
+
+      // Procesar hijos recursivamente
+      if (node.children && node.children.length > 0) {
+        node.children.forEach((child) => {
+          processNode(child, level + 1);
+        });
+      }
+    };
+
+    // Función para obtener todos los nodos planos
+    const flattenNodes = (node) => {
+      let nodes = [node];
+      if (node.children) {
+        node.children.forEach((child) => {
+          nodes = [...nodes, ...flattenNodes(child)];
+        });
+      }
+      return nodes;
+    };
+
+    // Si allNodes es un solo nodo (el root), procesarlo
+    if (allNodes.id) {
+      processNode(allNodes);
+      const flatNodes = flattenNodes(allNodes);
+
+      // Procesar todos los nodos planos para encontrar sus niveles correctos
+      flatNodes.forEach((node) => {
+        const level = calculateNodeLevel(node, allNodes);
+        const shouldCollapse = !expandAll && level > 2; // Cambio: level > 2
+        initialCollapsedState.set(node.id, shouldCollapse);
+      });
+    }
+
+    setCollapsedNodes(initialCollapsedState);
+    setInitialized(true);
+  };
+
+  // Función auxiliar para calcular el nivel de un nodo
+  const calculateNodeLevel = (targetNode, rootNode, currentLevel = 1) => {
+    if (targetNode.id === rootNode.id) {
+      return currentLevel;
+    }
+
+    if (rootNode.children) {
+      for (const child of rootNode.children) {
+        if (child.id === targetNode.id) {
+          return currentLevel + 1;
+        }
+
+        const foundLevel = calculateNodeLevel(
+          targetNode,
+          child,
+          currentLevel + 1
+        );
+        if (foundLevel > 0) {
+          return foundLevel;
+        }
+      }
+    }
+
+    return 0;
   };
 
   // Nueva función para manejar el estado de "controlando"
@@ -254,6 +347,7 @@ export const CollapseProvider = ({ children }) => {
     setCollapsedNodes(new Map());
     setControllingNodes(new Map());
     setSpecialConnections(new Map());
+    setInitialized(false);
   };
 
   return (
@@ -270,6 +364,8 @@ export const CollapseProvider = ({ children }) => {
         handleNormalCollapse,
         getDebugInfo,
         resetAllCollapsed,
+        initializeNodesState, // Nueva función expuesta
+        initialized,
       }}
     >
       {children}

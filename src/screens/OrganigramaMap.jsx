@@ -132,6 +132,12 @@ const DecorativeImage = ({ src, index, positions = defaultPositions }) => {
 // Actualizar la función Node en OrganigramaMap.jsx
 // Reemplazar desde la línea donde empieza "function Node({" hasta antes de "export default function OrganigramaMap()"
 
+// Reemplazar la función Node completa en OrganigramaMap.jsx
+
+// Reemplazar la función Node completa en OrganigramaMap.jsx
+
+// Reemplazar la función Node completa en OrganigramaMap.jsx
+
 function Node({ node, parent, allNodes, level }) {
   const {
     toggleNodeCollapse,
@@ -145,13 +151,9 @@ function Node({ node, parent, allNodes, level }) {
 
   const expandAll = dataOrganigrama?.expand === 1 ? true : false;
 
-  // Usar el estado global en lugar del estado local
-  // IMPORTANTE: Solo colapsar por defecto si expandAll es false Y tiene nivel > 0
-  const defaultCollapsed = !expandAll && level > 0;
-  const collapsed =
-    isNodeCollapsed(node.id) !== undefined
-      ? isNodeCollapsed(node.id)
-      : defaultCollapsed;
+  // CORRECCIÓN: Ahora el estado inicial se maneja en el provider
+  // Solo necesitamos obtener el estado actual del contexto
+  const collapsed = isNodeCollapsed(node.id);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState("");
@@ -180,6 +182,10 @@ function Node({ node, parent, allNodes, level }) {
     controlledNodes.length > 0
   );
 
+  // NUEVO: Determinar si el nodo debe ser clickeable
+  // Un nodo es clickeable si tiene hijos O tiene conexiones especiales
+  const isClickable = node?.children?.length > 0 || hasConnections;
+
   console.log(`Node ${node.id} (${node.nombre}):`, {
     hasConnections,
     hasChildren: node?.children?.length > 0,
@@ -191,9 +197,10 @@ function Node({ node, parent, allNodes, level }) {
     })),
     collapsed,
     level,
+    expandAll, // Agregar para debug
   });
 
-  // Actualiza el handleCollapse en el componente Node
+  // Resto del código permanece igual...
   const handleCollapse = (e) => {
     e.stopPropagation();
 
@@ -437,6 +444,7 @@ function Node({ node, parent, allNodes, level }) {
                   hasChildren={node?.children?.length > 0}
                   hasConnections={hasConnections}
                   collapsed={collapsed}
+                  isClickable={isClickable} // Nueva prop
                 />
               </div>
             </ArcherElement>
@@ -464,10 +472,11 @@ function Node({ node, parent, allNodes, level }) {
   );
 }
 
+// Actualizar solo el componente OrganigramaMap principal (la función export default)
+
 export default function OrganigramaMap() {
   const [data, setData] = useState([]);
   const [enlacesData, setEnlacesData] = useState([]);
-
   const [imagesData, setImagesData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -539,6 +548,7 @@ export default function OrganigramaMap() {
 
     fetchData();
   }, [slug]);
+
   if (loading) {
     return <div className="p-3">Loading...</div>;
   }
@@ -565,51 +575,84 @@ export default function OrganigramaMap() {
       }}
     >
       <CollapseProvider>
-        <ScrollContainer className="scroll-container" hideScrollbars={false}>
-          <CustomizedMenus options={enlacesData} />
-          <div
-            className="position-absolute w-100 h-100"
-            style={{ pointerEvents: "none" }}
-          >
-            {decorativeImages.map((imagen, index) => (
-              <DecorativeImage
-                key={index}
-                src={imagen}
-                index={index}
-                positions={customPositions} // Pasamos las posiciones personalizadas
-              />
-            ))}
-          </div>
-
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col position-relative" style={{ zIndex: 50 }}>
-                <div className="d-block pt-50 pb-50">
-                  <ArcherContainer
-                    strokeColor={rootColor}
-                    noCurves={false}
-                    offset={0}
-                    style={{
-                      height: "100%",
-                      width: "100%",
-                    }}
-                    svgContainerStyle={{
-                      overflow: "visible",
-                      position: "absolute",
-                    }}
-                  >
-                    <Node
-                      node={data.subprocesos}
-                      allNodes={flattenNodes(data.subprocesos)}
-                      level={1}
-                    />
-                  </ArcherContainer>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ScrollContainer>
+        {/* Componente interno para manejar la inicialización */}
+        <OrganigramaContent
+          data={data}
+          enlacesData={enlacesData}
+          decorativeImages={decorativeImages}
+          customPositions={customPositions}
+          rootColor={rootColor}
+        />
       </CollapseProvider>
     </div>
+  );
+}
+
+// Nuevo componente interno para manejar la inicialización
+function OrganigramaContent({
+  data,
+  enlacesData,
+  decorativeImages,
+  customPositions,
+  rootColor,
+}) {
+  const { initializeNodesState, initialized } = useCollapse();
+
+  // Inicializar el estado cuando tengamos los datos
+  useEffect(() => {
+    if (data?.subprocesos && !initialized) {
+      const expandAll = dataOrganigrama?.expand === 1;
+      console.log(
+        `Initializing with expand: ${dataOrganigrama?.expand}, expandAll: ${expandAll}`
+      );
+      initializeNodesState(data.subprocesos, expandAll);
+    }
+  }, [data, initialized, initializeNodesState]);
+
+  return (
+    <ScrollContainer className="scroll-container" hideScrollbars={false}>
+      <CustomizedMenus options={enlacesData} />
+      <div
+        className="position-absolute w-100 h-100"
+        style={{ pointerEvents: "none" }}
+      >
+        {decorativeImages.map((imagen, index) => (
+          <DecorativeImage
+            key={index}
+            src={imagen}
+            index={index}
+            positions={customPositions}
+          />
+        ))}
+      </div>
+
+      <div className="container-fluid">
+        <div className="row">
+          <div className="col position-relative" style={{ zIndex: 50 }}>
+            <div className="d-block pt-50 pb-50">
+              <ArcherContainer
+                strokeColor={rootColor}
+                noCurves={false}
+                offset={0}
+                style={{
+                  height: "100%",
+                  width: "100%",
+                }}
+                svgContainerStyle={{
+                  overflow: "visible",
+                  position: "absolute",
+                }}
+              >
+                <Node
+                  node={data.subprocesos}
+                  allNodes={flattenNodes(data.subprocesos)}
+                  level={1}
+                />
+              </ArcherContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ScrollContainer>
   );
 }
