@@ -282,10 +282,12 @@ export const CollapseProvider = ({ children }) => {
     }
 
     // Si estamos expandiendo un nodo (isCollapsed = false),
-    // verificar si tiene hijos que están siendo controlados por conexiones especiales
+    // necesitamos asegurarnos de que sus hijos directos sean visibles
     if (!isCollapsed && allNodes) {
       const node = allNodes.find((n) => n.id === nodeId);
       if (node && node.children) {
+        // IMPORTANTE: Al expandir un nodo, sus hijos directos deben ser visibles
+        // pero NO necesariamente expandidos (mantienen su estado de colapso)
         node.children.forEach((child) => {
           // Si el hijo está siendo controlado por conexión especial,
           // desactivar ese control para permitir la expansión normal
