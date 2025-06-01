@@ -156,7 +156,7 @@ export const CollapseProvider = ({ children }) => {
     return false;
   };
 
-  // FUNCIÓN MEJORADA: Verificar si un nodo está siendo controlado por conexión especial
+  // ACTUALIZADA: Verificar si un nodo está siendo controlado por conexión especial
   const isNodeControlledBySpecialConnection = (nodeId, allNodes) => {
     if (!allNodes) return false;
 
@@ -168,7 +168,7 @@ export const CollapseProvider = ({ children }) => {
       return false;
     }
 
-    // Verificar si este nodo tiene parent_second_id o parent_third_id
+    // Verificar si este nodo tiene parent_second_id, parent_third_id o parent_fourth_id
     // Y ese controlador está activo
     if (node.parent_second_id) {
       const controller = allNodes.find((n) => n.id === node.parent_second_id);
@@ -185,6 +185,20 @@ export const CollapseProvider = ({ children }) => {
 
     if (node.parent_third_id) {
       const controller = allNodes.find((n) => n.id === node.parent_third_id);
+      if (controller && isNodeControlling(controller.id)) {
+        // Verificar si hay una conexión activa específica
+        const connectionKey = `${controller.id}->${nodeId}`;
+        const hasActiveConnection = Array.from(specialConnections.keys()).some(
+          (key) => key === connectionKey
+        );
+        // Si no hay conexión activa, está controlado (oculto)
+        return !hasActiveConnection;
+      }
+    }
+
+    // NUEVO: Verificar parent_fourth_id
+    if (node.parent_fourth_id) {
+      const controller = allNodes.find((n) => n.id === node.parent_fourth_id);
       if (controller && isNodeControlling(controller.id)) {
         // Verificar si hay una conexión activa específica
         const connectionKey = `${controller.id}->${nodeId}`;
@@ -253,7 +267,7 @@ export const CollapseProvider = ({ children }) => {
     }
   };
 
-  // NUEVA FUNCIÓN: Limpiar conflictos cuando se hace colapso normal
+  // ACTUALIZADA: Limpiar conflictos cuando se hace colapso normal
   const handleNormalCollapse = (nodeId, isCollapsed, allNodes = null) => {
     console.log(`handleNormalCollapse: ${nodeId} -> ${isCollapsed}`);
 
@@ -305,6 +319,11 @@ export const CollapseProvider = ({ children }) => {
             if (child.parent_third_id) {
               setNodeControlling(child.parent_third_id, false);
               setSpecialConnection(child.parent_third_id, child.id, false);
+            }
+            // NUEVO: Limpiar control del cuarto padre
+            if (child.parent_fourth_id) {
+              setNodeControlling(child.parent_fourth_id, false);
+              setSpecialConnection(child.parent_fourth_id, child.id, false);
             }
           }
         });
@@ -367,7 +386,7 @@ export const CollapseProvider = ({ children }) => {
         handleNormalCollapse,
         getDebugInfo,
         resetAllCollapsed,
-        initializeNodesState, // Nueva función expuesta
+        initializeNodesState,
         initialized,
       }}
     >

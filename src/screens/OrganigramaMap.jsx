@@ -127,17 +127,6 @@ const DecorativeImage = ({ src, index, positions = defaultPositions }) => {
   );
 };
 
-// Card component for nodes
-
-// Actualizar la función Node en OrganigramaMap.jsx
-// Reemplazar desde la línea donde empieza "function Node({" hasta antes de "export default function OrganigramaMap()"
-
-// Reemplazar la función Node completa en OrganigramaMap.jsx
-
-// Reemplazar la función Node completa en OrganigramaMap.jsx
-
-// Reemplazar la función Node completa en OrganigramaMap.jsx
-
 function Node({ node, parent, allNodes, level }) {
   const {
     toggleNodeCollapse,
@@ -151,7 +140,6 @@ function Node({ node, parent, allNodes, level }) {
 
   const expandAll = dataOrganigrama?.expand === 1 ? true : false;
 
-  // CORRECCIÓN: Ahora el estado inicial se maneja en el provider
   // Solo necesitamos obtener el estado actual del contexto
   const collapsed = isNodeCollapsed(node.id);
 
@@ -160,7 +148,7 @@ function Node({ node, parent, allNodes, level }) {
 
   const nodeColor = node?.color || "#bbc";
 
-  // Encontrar nodos conectados (que este nodo controla via parent_second_id/parent_third_id)
+  // Encontrar nodos conectados (que este nodo controla via parent_second_id/parent_third_id/parent_fourth_id)
   const secondaryTarget = node.parent_second_id
     ? allNodes.find((n) => n.id === node.parent_second_id)
     : null;
@@ -169,21 +157,29 @@ function Node({ node, parent, allNodes, level }) {
     ? allNodes.find((n) => n.id === node.parent_third_id)
     : null;
 
-  // LÓGICA CORREGIDA: Encontrar nodos que ESTE nodo puede controlar
-  // Buscar nodos que tengan parent_second_id o parent_third_id apuntando a este nodo
+  // NUEVO: Agregar soporte para parent_fourth_id
+  const fourthTarget = node.parent_fourth_id
+    ? allNodes.find((n) => n.id === node.parent_fourth_id)
+    : null;
+
+  // ACTUALIZADO: Encontrar nodos que ESTE nodo puede controlar
+  // Buscar nodos que tengan parent_second_id, parent_third_id o parent_fourth_id apuntando a este nodo
   const controlledNodes = allNodes.filter(
-    (n) => n.parent_second_id === node.id || n.parent_third_id === node.id
+    (n) =>
+      n.parent_second_id === node.id ||
+      n.parent_third_id === node.id ||
+      n.parent_fourth_id === node.id
   );
 
-  // Verificar si este nodo tiene conexiones (para hacer clickeable el Card)
+  // ACTUALIZADO: Verificar si este nodo tiene conexiones (para hacer clickeable el Card)
   const hasConnections = !!(
     secondaryTarget ||
     thirdTarget ||
+    fourthTarget ||
     controlledNodes.length > 0
   );
 
-  // NUEVO: Determinar si el nodo debe ser clickeable
-  // Un nodo es clickeable si tiene hijos O tiene conexiones especiales
+  // Determinar si el nodo debe ser clickeable
   const isClickable = node?.children?.length > 0 || hasConnections;
 
   console.log(`Node ${node.id} (${node.nombre}):`, {
@@ -191,20 +187,18 @@ function Node({ node, parent, allNodes, level }) {
     hasChildren: node?.children?.length > 0,
     secondaryTarget: secondaryTarget?.id,
     thirdTarget: thirdTarget?.id,
+    fourthTarget: fourthTarget?.id, // NUEVO: Log para fourth target
     controlledNodes: controlledNodes.map((n) => ({
       id: n.id,
       nombre: n.nombre,
     })),
     collapsed,
     level,
-    expandAll, // Agregar para debug
+    expandAll,
   });
 
-  // Resto del código permanece igual...
   const handleCollapse = (e) => {
     e.stopPropagation();
-
-    // LÓGICA MEJORADA: Separar completamente colapsos normales de conexiones especiales
 
     // 1. Si tiene hijos, manejar colapso normal de jerarquía con la nueva función
     if (node?.children?.length > 0) {
@@ -212,7 +206,7 @@ function Node({ node, parent, allNodes, level }) {
       handleNormalCollapse(node.id, !collapsed, allNodes);
     }
 
-    // 2. Si tiene conexiones directas (parent_second_id, parent_third_id), controlar esos nodos
+    // 2. Si tiene conexiones directas, controlar esos nodos
     if (secondaryTarget) {
       console.log(
         `Toggling direct connection from ${node.id} to ${secondaryTarget.id}`
@@ -227,8 +221,15 @@ function Node({ node, parent, allNodes, level }) {
       collapseConnectedNode(node.id, thirdTarget.id, allNodes);
     }
 
+    // NUEVO: Manejar conexión del cuarto padre
+    if (fourthTarget) {
+      console.log(
+        `Toggling direct connection from ${node.id} to ${fourthTarget.id}`
+      );
+      collapseConnectedNode(node.id, fourthTarget.id, allNodes);
+    }
+
     // 3. Si controla otros nodos (nodos que apuntan a este), controlar esos nodos
-    // Esto es para casos como MCR que controla EVENT
     if (controlledNodes.length > 0) {
       controlledNodes.forEach((controlledNode) => {
         console.log(`Controlling node ${controlledNode.id} from ${node.id}`);
@@ -237,7 +238,7 @@ function Node({ node, parent, allNodes, level }) {
     }
   };
 
-  // FUNCIÓN CORREGIDA: Verificar si este nodo está siendo controlado directamente por conexión especial
+  // ACTUALIZADA: Verificar si este nodo está siendo controlado directamente por conexión especial
   const isDirectlyControlledBySpecialConnection = () => {
     // Primero verificar si el nodo está siendo mostrado explícitamente por una conexión especial
     if (isNodeShownBySpecialConnection(node.id)) {
@@ -247,7 +248,7 @@ function Node({ node, parent, allNodes, level }) {
       return false; // No está controlado, está siendo mostrado
     }
 
-    // Este nodo está controlado si tiene parent_second_id o parent_third_id
+    // Este nodo está controlado si tiene parent_second_id, parent_third_id o parent_fourth_id
     // Y ese nodo controlador está en estado "controlling"
     if (node.parent_second_id) {
       const controller = allNodes.find((n) => n.id === node.parent_second_id);
@@ -269,10 +270,21 @@ function Node({ node, parent, allNodes, level }) {
       }
     }
 
+    // NUEVO: Verificar parent_fourth_id
+    if (node.parent_fourth_id) {
+      const controller = allNodes.find((n) => n.id === node.parent_fourth_id);
+      if (controller && isNodeControlling(controller.id)) {
+        console.log(
+          `Node ${node.id} (${node.nombre}) is directly controlled by ${controller.id} (${controller.nombre}) via parent_fourth_id`
+        );
+        return true;
+      }
+    }
+
     return false;
   };
 
-  // FUNCIÓN MEJORADA: Verificar si algún ancestro está siendo controlado por conexión especial
+  // ACTUALIZADA: Verificar si algún ancestro está siendo controlado por conexión especial
   const isAncestorControlledBySpecialConnection = () => {
     // Si el nodo está siendo mostrado por conexión especial, no verificar ancestros
     if (isNodeShownBySpecialConnection(node.id)) {
@@ -300,7 +312,7 @@ function Node({ node, parent, allNodes, level }) {
         return false;
       }
 
-      // Verificar si el ancestro tiene parent_second_id o parent_third_id
+      // Verificar si el ancestro tiene parent_second_id, parent_third_id o parent_fourth_id
       if (ancestor.parent_second_id) {
         const controller = allNodes.find(
           (n) => n.id === ancestor.parent_second_id
@@ -320,6 +332,19 @@ function Node({ node, parent, allNodes, level }) {
         if (controller && isNodeControlling(controller.id)) {
           console.log(
             `Node ${node.id} (${node.nombre}) is hidden because ancestor ${ancestor.id} (${ancestor.nombre}) is controlled by ${controller.id} (${controller.nombre}) via parent_third_id`
+          );
+          return true;
+        }
+      }
+
+      // NUEVO: Verificar parent_fourth_id en ancestros
+      if (ancestor.parent_fourth_id) {
+        const controller = allNodes.find(
+          (n) => n.id === ancestor.parent_fourth_id
+        );
+        if (controller && isNodeControlling(controller.id)) {
+          console.log(
+            `Node ${node.id} (${node.nombre}) is hidden because ancestor ${ancestor.id} (${ancestor.nombre}) is controlled by ${controller.id} (${controller.nombre}) via parent_fourth_id`
           );
           return true;
         }
@@ -348,7 +373,7 @@ function Node({ node, parent, allNodes, level }) {
     return isHidden;
   };
 
-  // Combinar todas las condiciones - LÓGICA ACTUALIZADA
+  // Combinar todas las condiciones
   const shouldHideNode =
     isHiddenByParent() ||
     isDirectlyControlledBySpecialConnection() ||
@@ -359,6 +384,7 @@ function Node({ node, parent, allNodes, level }) {
     setIsModalOpen(true);
   };
 
+  // ACTUALIZADA: Incluir fourthTarget en las relaciones
   const getRelations = () => {
     const relations = [];
 
@@ -382,6 +408,24 @@ function Node({ node, parent, allNodes, level }) {
     if (thirdTarget && !shouldHideNode) {
       relations.push({
         targetId: `node-${thirdTarget.id}`,
+        targetAnchor: "left",
+        sourceAnchor: "right",
+        style: {
+          stroke: nodeColor,
+          strokeWidth: 2,
+          endMarker: false,
+          startMarker: true,
+        },
+        label: null,
+        className: "custom-arrow",
+        offset: 0,
+      });
+    }
+
+    // NUEVO: Agregar relación para fourthTarget
+    if (fourthTarget && !shouldHideNode) {
+      relations.push({
+        targetId: `node-${fourthTarget.id}`,
         targetAnchor: "left",
         sourceAnchor: "right",
         style: {
@@ -444,7 +488,7 @@ function Node({ node, parent, allNodes, level }) {
                   hasChildren={node?.children?.length > 0}
                   hasConnections={hasConnections}
                   collapsed={collapsed}
-                  isClickable={isClickable} // Nueva prop
+                  isClickable={isClickable}
                 />
               </div>
             </ArcherElement>
@@ -471,8 +515,6 @@ function Node({ node, parent, allNodes, level }) {
     </>
   );
 }
-
-// Actualizar solo el componente OrganigramaMap principal (la función export default)
 
 export default function OrganigramaMap() {
   const [data, setData] = useState([]);
@@ -575,7 +617,6 @@ export default function OrganigramaMap() {
       }}
     >
       <CollapseProvider>
-        {/* Componente interno para manejar la inicialización */}
         <OrganigramaContent
           data={data}
           enlacesData={enlacesData}
@@ -588,7 +629,7 @@ export default function OrganigramaMap() {
   );
 }
 
-// Nuevo componente interno para manejar la inicialización
+// Componente interno para manejar la inicialización
 function OrganigramaContent({
   data,
   enlacesData,
